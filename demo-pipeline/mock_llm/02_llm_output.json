@@ -1,0 +1,14 @@
+{
+  "page_id": "home_page",
+  "blocks": [
+    {
+      "blockType": "Hero",
+      "confidence": 0.99,
+      "mappings": {
+        "titleNodeId": "102",
+        "subtitleNodeId": "103",
+        "backgroundImageNodeId": "104"
+      }
+    }
+  ]
+}

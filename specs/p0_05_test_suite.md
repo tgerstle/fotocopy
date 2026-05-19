@@ -2,7 +2,9 @@
 
 The power of the Tracer Bullet is that it provides a fast, localized feedback loop. Because we are mocking the heavy lifting (Playwright scraping and Ollama inference), the entire Phase 0 pipeline should execute and validate in milliseconds.
 
-This enables a strict Test-Driven Development (TDD) loop. If we need to change our data schema (e.g. adding `buttons` to a `Hero` block), we MUST update the mock files here, ensure the test suite passes, and ensure the UI renders correctly _before_ touching the actual Python/Node scraping logic.
+This enables a strict Test-Driven Development (TDD) loop using **Contract-Driven Testing**. If we need to change our data schema (e.g. adding `buttons` to a `Hero` block), we MUST update the mock files here, ensure the test suite passes, and ensure the UI renders correctly _before_ touching the actual Node Playwright scraping logic.
+
+Furthermore, these Tracer Bullet tests act as our live system tests. As we build out Phase 1, we will evaluate the live Node Crawler output against these exact same Zod Schemas using a real-world benchmark target: **`css-snacks.com`**.
 
 ## The testing pipeline (`npm run test:tracer`)
 

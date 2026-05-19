@@ -39,11 +39,11 @@ The engine does not link out to legacy domains for images or stylesheets, nor do
 ### Phase 0: Tracer Bullet (Demo Pipeline)
 
 **Goal:** Prove the data structure works _first_.
-We build the final output—a Next.js site powered by mock JSON—_before_ writing any extraction logic. This live sandbox (`/demo-frontend`) acts as a testbed for schema changes during development before backend code is written.
+We build the final output—a Next.js site powered by mock JSON—_before_ writing any extraction logic. This live sandbox acts as a testbed for schema changes during development before backend code is written.
 
 ### Phase 1: Orchestration Foundation & Discovery
 
-The initial stage establishes a Node.js orchestration layer designed to crawl and snapshot existing digital properties accurately.
+The initial stage establishes a Node.js orchestration layer designed to crawl and snapshot existing digital properties accurately. The crawler heavily leverages **Contract-Driven Testing**, benchmarking its raw layout extraction and HTML dumping against our strictly typed Zod schemas. The benchmark site for pipeline development is `css-snacks.com`.
 
 - **Global Configuration & Hooks (`fotocopy.config.ts`):** The orchestration engine is built to be strictly site-agnostic. All site-specific logic (e.g., LLM host endpoints, page categorization regex routing, and pre/post payload hooks) is defined in a standard user configuration file injected into the pipeline at runtime.
 - **Adaptive Crawler Repurposing:** We utilize our existing **Adaptive Web Auditor (site-scanner)**. Its robust **Scenario System** is heavily relied upon to navigate logic-gate blockers like modals, cookie banners, and interstitials that reliably derail standard scrapers.
@@ -94,3 +94,5 @@ The strategic usage of the Cloudflare stack radically modifies standard agency o
 
 - Because **Cloudflare D1** (database) and **R2** (object storage) provide vast free-tier execution and storage limits, we can aggregate **15–20 distinct client site projects** strictly under a singular **$5/month Cloudflare Workers subscription**.
 - This lack of recurring fractional AWS/Vercel fees creates staggering profit margins for long-term retainer migration & hosting contracts, offering both deep resilience and unparalleled multi-tenant edge capabilities.
+
+**Workspace Architecture:** The project uses NPM Workspaces to manage individual domains (demo-frontend, demo-pipeline) to streamline lockfiles and dependency execution.

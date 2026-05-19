@@ -1,0 +1,10 @@
+{
+  "color": {
+    "primary": { "$value": "#E24A4A", "$type": "color" },
+    "background": { "$value": "#FFFFFF", "$type": "color" },
+    "text": { "$value": "#333333", "$type": "color" }
+  },
+  "fontFamily": {
+    "sans": { "$value": "Inter, sans-serif", "$type": "fontFamily" }
+  }
+}

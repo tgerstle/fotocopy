@@ -1,1 +1,14 @@
-{}
+{
+  "name": "fotocopy-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "demo-pipeline",
+    "demo-frontend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w demo-frontend",
+    "build:frontend": "npm run build -w demo-frontend",
+    "test:pipeline": "npm run test -w demo-pipeline"
+  }
+}

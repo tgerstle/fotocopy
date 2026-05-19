@@ -7,13 +7,14 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/node": "^25.9.0",
     "autoprefixer": "^10.5.0",
     "husky": "^9.1.7",
@@ -24,5 +25,10 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.6",
     "zod": "^4.4.3"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.60.0",
+    "cheerio": "^1.2.0",
+    "playwright": "^1.60.0"
   }
 }
