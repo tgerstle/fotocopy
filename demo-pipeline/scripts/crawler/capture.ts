@@ -67,6 +67,9 @@ export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
       el.setAttribute("data-awa-id", counter.toString());
 
       // Extract bounding box and semantic accessibility
+      const computed = window.getComputedStyle(el);
+      const parentRect = el.parentElement ? el.parentElement.getBoundingClientRect() : { width: window.innerWidth };
+      
       nodeMap.push({
         id: counter,
         tag: el.tagName,
@@ -75,6 +78,11 @@ export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
           y: rect.y,
           width: rect.width,
           height: rect.height,
+          parentWidth: parentRect.width,
+        },
+        style: {
+          backgroundColor: computed.backgroundColor,
+          marginTop: parseInt(computed.marginTop) || 0,
         },
         a11y: {
           role: el.getAttribute("role") || null,
