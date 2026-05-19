@@ -14,16 +14,30 @@ export interface TemplateCluster {
 }
 
 /**
- * Strips out global elements (simulated by dropping nav/footer for this test)
- * and computes a structural hash of the remaining inner <body> content.
+ * Strips out global elements using actual globalHashes generated in Step 2.
+ * Computes a structural hash of the remaining inner <body> content.
  */
-function computeInnerHash(html: string): string {
+function computeInnerHash(html: string, globalHashes: string[]): string {
   const $ = cheerio.load(html);
   
-  // Simulate the subtraction of global elements mathematically discovered in Step 2.
-  // In a real pipeline, we pass the `globalHashes` array and drop matching nodes.
-  $("nav, header, footer, .global-header, .global-footer").remove();
+  // Dynamically remove nodes that match the global footprint
+  $(
+    "body > *, header, footer, nav, [class*='header'], [class*='footer']",
+  ).each((_, el) => {
+    if (
+      el.name.toUpperCase() === "SCRIPT" ||
+      el.name.toUpperCase() === "STYLE"
+    )
+      return;
 
+    const sig = getStructuralSignature(el, $);
+    if (sig.length < 15) return; 
+
+    const hash = crypto.createHash("sha256").update(sig).digest("hex");
+    if (globalHashes.includes(hash)) {
+      $(el).remove();
+    }
+  });
   // Now hash the remaining body content
   const body = $("body").get(0);
   if (!body) return "";
@@ -51,6 +65,7 @@ function getRoutePrefix(url: string): string {
  */
 export function inferTemplates(
   pages: PageTopology[],
+  globalHashes: string[],
   minClusterSize: number = 2
 ): TemplateCluster[] {
   // Map of URL Prefix -> { structuralHash -> URLs }
@@ -58,7 +73,7 @@ export function inferTemplates(
 
   for (const page of pages) {
     const prefix = getRoutePrefix(page.url);
-    const innerHash = computeInnerHash(page.html);
+    const innerHash = computeInnerHash(page.html, globalHashes);
 
     if (!clusters[prefix]) {
       clusters[prefix] = {};
@@ -66,14 +81,14 @@ export function inferTemplates(
     if (!clusters[prefix][innerHash]) {
       clusters[prefix][innerHash] = [];
     }
-    
+
     clusters[prefix][innerHash].push(page.url);
   }
 
   const results: TemplateCluster[] = [];
 
   for (const [prefix, hashGroups] of Object.entries(clusters)) {
-    // If prefix is root, it's usually ad-hoc pages (Home, About). 
+    // If prefix is root, it's usually ad-hoc pages (Home, About).
     // We only cluster sub-directories into Collections.
     if (prefix === "/") continue;
 

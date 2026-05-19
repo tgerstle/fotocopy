@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { inferTemplates, PageTopology } from "../../scripts/intersection/template_inference";
+import {
+  inferTemplates,
+  PageTopology,
+} from "../../scripts/intersection/template_inference";
+import crypto from "crypto";
 
 describe("Phase 2: Step 3 - Template Inference", () => {
   it("clusters URLs into a CMS Collection based on shared inner structural topology", () => {
-    
     // We mock 5 pages.
     // Pages 1-3 are /news/ articles. They share the same structural skeleton inside the <main>.
     // Page 4 is a /news/ article but entirely different structure (e.g. ad-hoc landing page).
@@ -74,13 +77,18 @@ describe("Phase 2: Step 3 - Template Inference", () => {
       { url: "/about-us", html: newsStructureA }, // Same structure, different prefix
     ];
 
-    const clusters = inferTemplates(pages, 2);
+    // Mocking the hashing engine output for `<nav>` and `<footer>` signatures
+    const navHash = crypto.createHash("sha256").update("<NAV></NAV>").digest("hex");
+    const footerHash = crypto.createHash("sha256").update("<FOOTER></FOOTER>").digest("hex");
+    
+    // Call inference with the mocked global hashes
+    const clusters = inferTemplates(pages, [navHash, footerHash], 2);
 
     // It should have identified exactly 1 Template Collection: NEWS_COLLECTION
     // It should contain 3 URLs (hello-world, another-post, third-post).
     // It MUST ignore the special-event because its box-model doesn't match!
     // It MUST ignore the /about-us page because its URL prefix doesn't match!
-    
+
     expect(clusters.length).toBe(1);
     expect(clusters[0].templateName).toBe("NEWS_COLLECTION");
     expect(clusters[0].urlPattern).toBe("/news/*");

@@ -99,21 +99,23 @@ export function sliceIntoChunks(nodes: CapturedNode[]): Chunk[] {
   let activeBoundaryNode: CapturedNode | null = null;
   // Tracks the boundary's physical bounds, NOT the whole document wrapper's bounds.
   // We only track the geometric bottom of the MOST RECENT actual semantic boundary.
-  let boundaryBottom = 0; 
+  let boundaryBottom = 0;
   let previousNode: CapturedNode | null = null;
 
   for (const node of nodes) {
     // Determine if this is a deeply nested element inside the active boundary
     const isInsideCurrentBoundary =
-      activeBoundaryNode !== null && 
-      (node.geometry.y < boundaryBottom) && 
-      (node.geometry.y + node.geometry.height <= boundaryBottom);
+      activeBoundaryNode !== null &&
+      node.geometry.y < boundaryBottom &&
+      node.geometry.y + node.geometry.height <= boundaryBottom;
 
     let boundaryTriggered = false;
 
     const tag = node.tag.toUpperCase();
     const isStrongTag = ["SECTION", "ARTICLE"].includes(tag);
-    const activeIsWeak = activeBoundaryNode ? !["SECTION", "ARTICLE"].includes(activeBoundaryNode.tag.toUpperCase()) : true;
+    const activeIsWeak = activeBoundaryNode
+      ? !["SECTION", "ARTICLE"].includes(activeBoundaryNode.tag.toUpperCase())
+      : true;
 
     // We can break if not trapped inside a boundary, or if we hit a strong semantic tag inside a generic weak wrapper (like a 1000px DIV)
     const canBreak = !isInsideCurrentBoundary || (isStrongTag && activeIsWeak);
@@ -146,10 +148,14 @@ export function sliceIntoChunks(nodes: CapturedNode[]): Chunk[] {
 // Allows CLI execution
 if (require.main === module) {
   const inputFile = process.argv[2];
-  const outDir = process.argv[3] || path.resolve(__dirname, "../../output/sliced_chunks/default_route");
+  const outDir =
+    process.argv[3] ||
+    path.resolve(__dirname, "../../output/sliced_chunks/default_route");
 
   if (!inputFile) {
-    console.error("Usage: ts-node chunk_slicer.ts <path_to_geometry.json> [outDir]");
+    console.error(
+      "Usage: ts-node chunk_slicer.ts <path_to_geometry.json> [outDir]",
+    );
     process.exit(1);
   }
 
@@ -158,13 +164,18 @@ if (require.main === module) {
       const data = await fs.readFile(inputFile, "utf8");
       const nodes: CapturedNode[] = JSON.parse(data);
       const chunks = sliceIntoChunks(nodes);
-      
+
       await fs.mkdir(outDir, { recursive: true });
       for (let i = 0; i < chunks.length; i++) {
         const chunkName = `chunk_${String(i + 1).padStart(2, "0")}.json`;
-        await fs.writeFile(path.join(outDir, chunkName), JSON.stringify(chunks[i], null, 2));
+        await fs.writeFile(
+          path.join(outDir, chunkName),
+          JSON.stringify(chunks[i], null, 2),
+        );
       }
-      console.log(`Sliced ${nodes.length} nodes into ${chunks.length} chunks at ${outDir}`);
+      console.log(
+        `Sliced ${nodes.length} nodes into ${chunks.length} chunks at ${outDir}`,
+      );
     } catch (err) {
       console.error(err);
     }

@@ -68,8 +68,10 @@ export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
 
       // Extract bounding box and semantic accessibility
       const computed = window.getComputedStyle(el);
-      const parentRect = el.parentElement ? el.parentElement.getBoundingClientRect() : { width: window.innerWidth };
-      
+      const parentRect = el.parentElement
+        ? el.parentElement.getBoundingClientRect()
+        : { width: window.innerWidth };
+
       nodeMap.push({
         id: counter,
         tag: el.tagName,
