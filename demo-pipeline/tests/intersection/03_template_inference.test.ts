@@ -78,9 +78,15 @@ describe("Phase 2: Step 3 - Template Inference", () => {
     ];
 
     // Mocking the hashing engine output for `<nav>` and `<footer>` signatures
-    const navHash = crypto.createHash("sha256").update("<NAV></NAV>").digest("hex");
-    const footerHash = crypto.createHash("sha256").update("<FOOTER></FOOTER>").digest("hex");
-    
+    const navHash = crypto
+      .createHash("sha256")
+      .update("<NAV></NAV>")
+      .digest("hex");
+    const footerHash = crypto
+      .createHash("sha256")
+      .update("<FOOTER></FOOTER>")
+      .digest("hex");
+
     // Call inference with the mocked global hashes
     const clusters = inferTemplates(pages, [navHash, footerHash], 2);
 

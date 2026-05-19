@@ -14,6 +14,7 @@ export interface CapturedNode {
   style?: {
     backgroundColor: string;
     marginTop: number;
+    position?: string;
   };
   a11y: {
     role: string | null;
@@ -43,6 +44,12 @@ export function isSliceBoundary(
   node: CapturedNode,
   previousNode: CapturedNode | null,
 ): boolean {
+  // 0. Ignore Sticky/Absolute Elements as Boundaries
+  // We do not want floating widgets or sticky side-navs slicing standard flow
+  if (node.style && ["sticky", "fixed", "absolute"].includes(node.style.position || "")) {
+    return false;
+  }
+
   // 1. Semantic Delimiters
   const tag = node.tag.toUpperCase();
   if (["SECTION", "ARTICLE", "HR"].includes(tag)) {

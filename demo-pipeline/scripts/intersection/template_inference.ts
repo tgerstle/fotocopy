@@ -19,25 +19,25 @@ export interface TemplateCluster {
  */
 function computeInnerHash(html: string, globalHashes: string[]): string {
   const $ = cheerio.load(html);
-  
+
   // Dynamically remove nodes that match the global footprint
-  $(
-    "body > *, header, footer, nav, [class*='header'], [class*='footer']",
-  ).each((_, el) => {
-    if (
-      el.name.toUpperCase() === "SCRIPT" ||
-      el.name.toUpperCase() === "STYLE"
-    )
-      return;
+  $("body > *, header, footer, nav, [class*='header'], [class*='footer']").each(
+    (_, el) => {
+      if (
+        el.name.toUpperCase() === "SCRIPT" ||
+        el.name.toUpperCase() === "STYLE"
+      )
+        return;
 
-    const sig = getStructuralSignature(el, $);
-    if (sig.length < 15) return; 
+      const sig = getStructuralSignature(el, $);
+      if (sig.length < 15) return;
 
-    const hash = crypto.createHash("sha256").update(sig).digest("hex");
-    if (globalHashes.includes(hash)) {
-      $(el).remove();
-    }
-  });
+      const hash = crypto.createHash("sha256").update(sig).digest("hex");
+      if (globalHashes.includes(hash)) {
+        $(el).remove();
+      }
+    },
+  );
   // Now hash the remaining body content
   const body = $("body").get(0);
   if (!body) return "";
@@ -66,7 +66,7 @@ function getRoutePrefix(url: string): string {
 export function inferTemplates(
   pages: PageTopology[],
   globalHashes: string[],
-  minClusterSize: number = 2
+  minClusterSize: number = 2,
 ): TemplateCluster[] {
   // Map of URL Prefix -> { structuralHash -> URLs }
   const clusters: Record<string, Record<string, string[]>> = {};

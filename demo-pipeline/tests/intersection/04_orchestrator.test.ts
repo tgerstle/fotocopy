@@ -34,18 +34,29 @@ describe("Phase 2: Step 4 - Orchestrator Integration", () => {
     const mockGeomPage1 = [
       { id: 1, tag: "NAV", geometry: { y: 0, height: 100 } }, // Header!
       { id: 2, tag: "LI", geometry: { y: 10, height: 20 } },
-      { id: 3, tag: "MAIN", geometry: { y: 100, height: 500, width: 1000, parentWidth: 1000 } }, // Boundary trigger (DIV > 95% or block)
+      {
+        id: 3,
+        tag: "MAIN",
+        geometry: { y: 100, height: 500, width: 1000, parentWidth: 1000 },
+      }, // Boundary trigger (DIV > 95% or block)
       { id: 4, tag: "H1", geometry: { y: 110, height: 50 } }, // Content
     ];
 
     // Write Files
     for (let i = 0; i < pages.length; i++) {
-        await fs.writeFile(path.join(tempHtmlDir, `page${i}_dom.html`), pages[i]);
-        await fs.writeFile(path.join(tempGeomDir, `page${i}_geometry.json`), JSON.stringify(mockGeomPage1)); // Same geometry mock for all
+      await fs.writeFile(path.join(tempHtmlDir, `page${i}_dom.html`), pages[i]);
+      await fs.writeFile(
+        path.join(tempGeomDir, `page${i}_geometry.json`),
+        JSON.stringify(mockGeomPage1),
+      ); // Same geometry mock for all
     }
 
     try {
-      const manifest = await executePurgeAndSlice(tempHtmlDir, tempGeomDir, tempOutDir);
+      const manifest = await executePurgeAndSlice(
+        tempHtmlDir,
+        tempGeomDir,
+        tempOutDir,
+      );
 
       // The orchestrator should have found exactly 1 global footprint (the <nav>)
       expect(manifest.globalHashes.length).toBe(1);
@@ -53,22 +64,24 @@ describe("Phase 2: Step 4 - Orchestrator Integration", () => {
       // Inspect output chunks specifically for page0
       const page0ChunksDir = path.join(tempOutDir, "page0");
       const files = await fs.readdir(page0ChunksDir);
-      
+
       // Should have chunk_01.json
       expect(files).toContain("chunk_01.json");
 
-      const chunkData = await fs.readFile(path.join(page0ChunksDir, "chunk_01.json"), "utf8");
+      const chunkData = await fs.readFile(
+        path.join(page0ChunksDir, "chunk_01.json"),
+        "utf8",
+      );
       const chunkArr = JSON.parse(chunkData);
 
       // Assert that ID 1 and ID 2 (The Nav and its Li) were physically purged!
       // Consequently, Chunk 1 should only contain ID 3 (MAIN) and ID 4 (H1)
       const idsInsideChunk = chunkArr.nodes.map((n: any) => n.id);
-      
+
       expect(idsInsideChunk).toContain(3);
       expect(idsInsideChunk).toContain(4);
       expect(idsInsideChunk).not.toContain(1);
       expect(idsInsideChunk).not.toContain(2);
-
     } finally {
       // Clean up test directories
       await fs.rm(tempHtmlDir, { recursive: true, force: true });

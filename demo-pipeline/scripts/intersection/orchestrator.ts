@@ -2,7 +2,10 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as cheerio from "cheerio";
 import crypto from "crypto";
-import { computeGlobalIntersections, getStructuralSignature } from "./hash_engine";
+import {
+  computeGlobalIntersections,
+  getStructuralSignature,
+} from "./hash_engine";
 import { sliceIntoChunks, CapturedNode } from "./chunk_slicer";
 
 /**
@@ -14,23 +17,28 @@ import { sliceIntoChunks, CapturedNode } from "./chunk_slicer";
 export async function executePurgeAndSlice(
   htmlCaptureDir: string,
   geometryCaptureDir: string,
-  outputChunksDir: string
+  outputChunksDir: string,
 ) {
   // Step 1: Compute global intersection signatures from the raw HTML files
   const manifest = await computeGlobalIntersections(htmlCaptureDir, 0.9);
-  
+
   // Save global manifest for debugging / downstream referencing
   await fs.mkdir(outputChunksDir, { recursive: true });
   await fs.writeFile(
     path.join(outputChunksDir, "globals_manifest.json"),
-    JSON.stringify(manifest, null, 2)
+    JSON.stringify(manifest, null, 2),
   );
 
   // Step 2: Iterate over every geometry file to purge and slice
-  const geomFiles = (await fs.readdir(geometryCaptureDir)).filter(f => f.endsWith("_geometry.json"));
+  const geomFiles = (await fs.readdir(geometryCaptureDir)).filter((f) =>
+    f.endsWith("_geometry.json"),
+  );
 
   for (const file of geomFiles) {
-    const rawData = await fs.readFile(path.join(geometryCaptureDir, file), "utf-8");
+    const rawData = await fs.readFile(
+      path.join(geometryCaptureDir, file),
+      "utf-8",
+    );
     const nodeMap: CapturedNode[] = JSON.parse(rawData);
 
     // Filter out node footprints that match global thresholds
@@ -43,34 +51,47 @@ export async function executePurgeAndSlice(
     // Let's implement this rigorous binding.
 
     const htmlFileName = file.replace("_geometry.json", "_dom.html");
-    const htmlData = await fs.readFile(path.join(htmlCaptureDir, htmlFileName), "utf-8");
+    const htmlData = await fs.readFile(
+      path.join(htmlCaptureDir, htmlFileName),
+      "utf-8",
+    );
 
     const $ = cheerio.load(htmlData);
     const nodesToRemoveIds = new Set<number>();
 
     // We do exactly what the Global Intersection did to find matches
-    $("body > *, header, footer, nav, [class*='header'], [class*='footer']").each((_, el) => {
-      if (el.name.toUpperCase() === "SCRIPT" || el.name.toUpperCase() === "STYLE") return;
-      
+    $(
+      "body > *, header, footer, nav, [class*='header'], [class*='footer']",
+    ).each((_, el) => {
+      if (
+        el.name.toUpperCase() === "SCRIPT" ||
+        el.name.toUpperCase() === "STYLE"
+      )
+        return;
+
       const sig = getStructuralSignature(el, $);
       if (sig.length < 15) return;
-      
+
       const hash = crypto.createHash("sha256").update(sig).digest("hex");
-      
+
       // If this is a global element, flag its exact awa-id AND all its children awa-ids for removal
       if (manifest.globalHashes.includes(hash)) {
         const idStr = $(el).attr("data-awa-id");
         if (idStr) nodesToRemoveIds.add(parseInt(idStr));
-        
-        $(el).find("[data-awa-id]").each((_, child) => {
-          const cId = $(child).attr("data-awa-id");
-          if (cId) nodesToRemoveIds.add(parseInt(cId));
-        });
+
+        $(el)
+          .find("[data-awa-id]")
+          .each((_, child) => {
+            const cId = $(child).attr("data-awa-id");
+            if (cId) nodesToRemoveIds.add(parseInt(cId));
+          });
       }
     });
 
     // Cleanse array
-    const purgedNodeMap = nodeMap.filter(node => !nodesToRemoveIds.has(node.id));
+    const purgedNodeMap = nodeMap.filter(
+      (node) => !nodesToRemoveIds.has(node.id),
+    );
 
     // Step 3: Run the chunk slicer on the sanitized content
     const chunks = sliceIntoChunks(purgedNodeMap);
@@ -81,8 +102,11 @@ export async function executePurgeAndSlice(
     await fs.mkdir(pageOutDir, { recursive: true });
 
     for (let i = 0; i < chunks.length; i++) {
-        const chunkName = `chunk_${String(i + 1).padStart(2, "0")}.json`;
-        await fs.writeFile(path.join(pageOutDir, chunkName), JSON.stringify(chunks[i], null, 2));
+      const chunkName = `chunk_${String(i + 1).padStart(2, "0")}.json`;
+      await fs.writeFile(
+        path.join(pageOutDir, chunkName),
+        JSON.stringify(chunks[i], null, 2),
+      );
     }
   }
 

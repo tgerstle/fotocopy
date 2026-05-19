@@ -85,6 +85,7 @@ export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
         style: {
           backgroundColor: computed.backgroundColor,
           marginTop: parseInt(computed.marginTop) || 0,
+          position: computed.position || "static",
         },
         a11y: {
           role: el.getAttribute("role") || null,

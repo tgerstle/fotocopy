@@ -111,4 +111,39 @@ describe("Phase 2: Step 1 - Chunk Slicing", () => {
     expect(chunks[1].nodes[0].id).toBe(3);
     expect(chunks[1].nodes[1].id).toBe(4);
   });
+
+  it("Sticky/Absolute Bypass: does not falsely trigger boundaries for floating elements", () => {
+    const nodes: CapturedNode[] = [
+      {
+        id: 1,
+        tag: "DIV",
+        geometry: { x: 0, y: 0, width: 1000, height: 500, parentWidth: 1000 },
+        style: { backgroundColor: "rgb(255, 255, 255)", marginTop: 0, position: "static" },
+        a11y: { role: null, alt: null, ariaLabel: null },
+      }, // Standard static wrapper -> Chunk 1
+      {
+        id: 2,
+        tag: "DIV",
+        geometry: { x: 900, y: 50, width: 100, height: 500, parentWidth: 1000 },
+        style: { backgroundColor: "rgb(0, 0, 0)", marginTop: 0, position: "sticky" },
+        a11y: { role: null, alt: null, ariaLabel: null },
+      }, // Sticky side nav -> Color shift AND margin bleed! But position is sticky. Should stay Chunk 1!
+      {
+        id: 3,
+        tag: "DIV",
+        geometry: { x: 0, y: 500, width: 1000, height: 500, parentWidth: 1000 },
+        style: { backgroundColor: "rgb(0, 0, 0)", marginTop: 0, position: "static" },
+        a11y: { role: null, alt: null, ariaLabel: null },
+      }, // Start Chunk 2 (valid color shift and static geometry)
+    ];
+
+    const chunks = sliceIntoChunks(nodes);
+
+    expect(chunks.length).toBe(2);
+    expect(chunks[0].nodes.length).toBe(2);
+    expect(chunks[0].nodes[0].id).toBe(1);
+    expect(chunks[0].nodes[1].id).toBe(2); // Sticky element joined the preceding chunk successfully
+    expect(chunks[1].nodes[0].id).toBe(3); // Standard section created boundaries properly
+  });
 });
+
