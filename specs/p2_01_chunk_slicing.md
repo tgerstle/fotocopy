@@ -25,19 +25,19 @@ Relying solely on "100% viewport width" to identify component boundaries fails d
 
 ## Implementation Status
 
-- [ ] Create `src/processor/chomper.js`.
-- [ ] Implement Parent Width boundary logic.
-- [ ] Implement Background Color shift logic.
-- [ ] Implement array grouping algorithm.
+- [x] Create `src/processor/chomper.js` (Implemented as `chunk_slicer.ts`).
+- [x] Implement Parent Width boundary logic.
+- [x] Implement Background Color shift logic.
+- [x] Implement array grouping algorithm.
 
 ## Verification & Tests
 
-**Test File:** `tests/chunk_slicing.test.js`
+**Test File:** `tests/intersection/02_chunk_slicing.test.ts`
 
 **Test Requirements:**
 
-1. **Boxed Layout Pass:** Feed synthetic JSON representing a strict `1000px` boxed layout containing 3 vertical sections. Assert the algorithm creates 3 separate chunks.
-2. **Color Shift Pass:** Feed synthetic JSON of 4 divs where the third div changes background color to `#000000`. Assert the algorithm slices at the 3rd div.
+- [x] **Boxed Layout Pass:** Feed synthetic JSON representing a strict `1000px` boxed layout containing 3 vertical sections. Assert the algorithm creates 3 separate chunks.
+- [x] **Color Shift Pass:** Feed synthetic JSON of 4 divs where the third div changes background color to `#000000`. Assert the algorithm slices at the 3rd div.
 
 **Execution:**
 `npm run test tests/chunk_slicing.test.js`

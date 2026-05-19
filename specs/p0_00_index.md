@@ -11,7 +11,7 @@ Instead of just mocking the final CMS data, we will manually create mock outputs
 - [x] **[p0_03_hydrator.md](p0_03_hydrator.md)**: Simulates Phase 3 (Hydration Engine). _Complete: Node script written and verified to extract HTML without hallucination._
 - [x] **[p0_04_cms_frontend.md](p0_04_cms_frontend.md)**: Simulates Phase 4 (Scaffolding) & Phase 5 (Local Execution). _Complete: Next.js App Router configured with dynamic optional catch-all routing._
 - [x] **[p0_05_test_suite.md](p0_05_test_suite.md)**: Establishes the Vitest execution loop. _Complete: Mocks and Hydrator tests all pass in the NPM Workspace._
-- [ ] **[p0_06_configuration.md](p0_06_configuration.md)**: Simulates how a `fotocopy.config.ts` plugin/hook system intercepts the pipeline. _Pending._
+- [x] **[p0_06_configuration.md](p0_06_configuration.md)**: Simulates how a `fotocopy.config.ts` plugin/hook system intercepts the pipeline. _Complete: Extracted root constants to fotocopy.config.ts._
 - [ ] **[p0_07_git_hooks.md](p0_07_git_hooks.md)**: Hardens the code review process with `husky` / `lint-staged`. _Pending._
 
 By building these micro-scripts and mocks first, we guarantee that the complex logic of Phases 1-5 will securely click together.

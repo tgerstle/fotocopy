@@ -22,3 +22,13 @@ After the Global Intersection (`p2_02`) strips the Header and Footer, the engine
 ## 3. The Output Definition
 
 Instead of sending these to the generic block pipeline, the system outputs mapping instructions. We update the configuration to route these specific URLs (via Regex) to a `Posts` Collection in Payload, utilizing a strictly defined `PostTemplate` rather than a generic array of blocks.
+
+## Implementation Status
+
+- [x] Create URL Topology prefix grouping (`/news/2026/hello` -> `/news`).
+- [x] Create inner body DOM geometry validation (`template_inference.ts`).
+- [x] Build clustering array map validating >= N matching inner instances.
+
+## Verification & Tests
+
+- [x] **Clustering Pass:** Tested with Vitest (`tests/intersection/03_template_inference.test.ts`), dynamically binning identical underlying geometries while dropping ad-hoc layouts that accidentally share identical URL prefixes.

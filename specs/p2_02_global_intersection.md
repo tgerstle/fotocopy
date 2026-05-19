@@ -23,3 +23,14 @@ Once every DOM tree is hashed, the engine compares them:
 ## 3. The Purge
 
 Before the **Chunk Slicer** (`p2_01`) begins cutting the page, it reads the `globals_manifest.json` and cleanly deletes any nodes from the DOM tree that match those global hashes. The page is now pure, unique content.
+
+## Implementation Status
+
+- [x] Create the Hashing Algorithm (`hash_engine.ts`).
+- [x] Implement dynamic state class stripping (`.active`, `[aria-current]`).
+- [x] Implement the > 90% Intersection Threshold logic.
+- [x] Output `globals_manifest.json` footprint references.
+
+## Verification & Tests
+
+- [x] **Threshold Pass:** Tested with Vitest (`tests/intersection/01_hashing.test.ts`), mathematically identifying common headers/footers while isolating unique body components gracefully.
