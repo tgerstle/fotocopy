@@ -46,7 +46,10 @@ export function isSliceBoundary(
 ): boolean {
   // 0. Ignore Sticky/Absolute Elements as Boundaries
   // We do not want floating widgets or sticky side-navs slicing standard flow
-  if (node.style && ["sticky", "fixed", "absolute"].includes(node.style.position || "")) {
+  if (
+    node.style &&
+    ["sticky", "fixed", "absolute"].includes(node.style.position || "")
+  ) {
     return false;
   }
 

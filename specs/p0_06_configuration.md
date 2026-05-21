@@ -16,6 +16,7 @@ export const FotocopyConfigSchema = z.object({
     endpoint: z.string().url(),
     model: z.string(),
     systemPromptInjection: z.string().optional(),
+    maxConcurrency: z.number().default(2), // Restricts local GPU bottlenecking
   }),
   routing: z.array(
     z.object({
@@ -43,6 +44,7 @@ export default {
   llm: {
     endpoint: "http://localhost:11434/api/generate",
     model: "gemma4:e4b",
+    maxConcurrency: 2, // e.g., 2 concurrent inferences for standard unified memory
     systemPromptInjection:
       "Pay special attention to legacy 'table' layouts, they are actually grids.",
   },

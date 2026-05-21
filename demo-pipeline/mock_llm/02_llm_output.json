@@ -2,7 +2,7 @@
   "page_id": "home_page",
   "blocks": [
     {
-      "blockType": "Hero",
+      "inferredBlockType": "Hero",
       "confidence": 0.99,
       "mappings": {
         "titleNodeId": "102",

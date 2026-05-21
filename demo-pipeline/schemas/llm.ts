@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const LLMBlockSchema = z.object({
-  blockType: z.string(),
-  confidence: z.number().min(0).max(1),
+  inferredBlockType: z.string(),
+  confidence: z.number().min(0).max(1).optional(),
   mappings: z.record(z.string(), z.string()), // Key is prop name, Value is data-awa-id string
 });
 

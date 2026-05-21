@@ -9,7 +9,7 @@ We do not trust Gemma (our extraction LLM) to write React code. Instead, we use 
 **Goal:** For every unique block type defined in the Zod schemas (e.g., `HeroBlockDataSchema`), construct a `.prompt.md` file that guides GitHub Copilot perfectly.
 
 **Implementation Logic:**
-The Orchestrator reads `schemas/cms.ts` and iterates the exports. When it finds a block schema, it writes to `prompts/Hero.prompt.md`:
+The Orchestrator reads the newly generated `fotocopy.components.json` (from Phase 3 Consolidation) and iterates its keys. When it finds a component definition, it writes to `prompts/Hero.prompt.md`:
 
 ```markdown
 # Context
@@ -19,8 +19,8 @@ The target block is: `Hero`
 
 # Strict TypeScript Interface
 
-The component MUST accept exactly these props dictated by this Zod schema:
-{INJECT_ZOD_SCHEMA_HERE}
+The component MUST accept exactly these props derived directly from the consolidated schema shape:
+{INJECT_COMPONENT_SCHEMA_HERE}
 
 # Design System
 
@@ -37,7 +37,7 @@ Use Tailwind CSS classes exclusively. Here are the W3C Design Tokens extracted f
 
 ## 2. The Developer Handoff
 
-1. The Prompt Generator outputs 15 `.prompt.md` files (one for every block found on the legacy site).
+1. The Prompt Generator outputs `.prompt.md` files for every block found in `fotocopy.components.json`.
 2. The developer opens VS Code.
 3. The developer executes the prompt inside Copilot Chat (or uses `#file` references).
 4. Copilot scaffolds `Hero.tsx`.

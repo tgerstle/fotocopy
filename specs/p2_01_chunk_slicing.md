@@ -16,6 +16,7 @@ Relying solely on "100% viewport width" to identify component boundaries fails d
    - **Background Shift:** The `getComputedStyle` `background-color` differs significantly from its preceding sibling (e.g., a white text section followed by a dark blue CTA section).
    - **Margin Gulfs:** The element has an extraordinarily large `margin-top`, acting as a visual delimiter.
    - **Semantic Delimiters:** The element is an `<hr>`, `<section>`, or `<article>`.
+   - **Sticky/Absolute Bypass:** Elements with CSS `position` of `sticky`, `fixed`, or `absolute` are strictly ignored as boundaries to prevent floating side-navs or widgets from maliciously slicing hierarchical document flow.
 3. **Array Chunker:**
    - Group the sequential DOM nodes into logical "Chunks" based on these boundary delimiters.
 4. **Output Structure:**
@@ -29,6 +30,7 @@ Relying solely on "100% viewport width" to identify component boundaries fails d
 - [x] Implement Parent Width boundary logic.
 - [x] Implement Background Color shift logic.
 - [x] Implement array grouping algorithm.
+- [x] Implement CSS Position bypass logic for floating widgets.
 
 ## Verification & Tests
 
@@ -38,6 +40,4 @@ Relying solely on "100% viewport width" to identify component boundaries fails d
 
 - [x] **Boxed Layout Pass:** Feed synthetic JSON representing a strict `1000px` boxed layout containing 3 vertical sections. Assert the algorithm creates 3 separate chunks.
 - [x] **Color Shift Pass:** Feed synthetic JSON of 4 divs where the third div changes background color to `#000000`. Assert the algorithm slices at the 3rd div.
-
-**Execution:**
-`npm run test tests/chunk_slicing.test.js`
+- [x] **Sticky/Absolute Bypass Pass:** Feed synthetic JSON containing overlapping coordinates with a `sticky` position. Assert it merges into the parent rather than breaking the sequence incorrectly.

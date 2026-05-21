@@ -12,9 +12,10 @@ Relying on prompting LLMs to "output JSON only" frequently breaks when the model
     - The utility function receives structural payloads from the Slicing Pass.
     - Payload includes the sanitized HTML chunk + matched Geometry Math + Accessibility semantics.
 
-2.  **Define Zod / JSON Schema (ID Pointer Pattern):**
+2.  **Define Zod / JSON Schema (Bottom-Up Component Discovery & ID Pointers):**
     - **CRITICAL:** Do NOT ask the LLM to output raw text (e.g., `content: "<p>Welcome to Acme...</p>"`). LLMs hallucinate or summarize long text.
-    - Instead, enforce an ID Pointer schema: `{ "target": "RichText", "nodeId": "123" }`. The LLM maps its architectural intent back to the `data-awa-id` stamped during Pass 1.
+    - Let the LLM _create_ the component name based on visual geometry and layout.
+    - Enforce a loose discovery schema: `{ "inferredBlockType": "StaffGrid", "mappings": { "title": "123", "personImage": "456" } }`. The LLM discovers the schema intent but strictly maps values back to the `data-awa-id` stamped during Pass 1.
 
 3.  **Construct REST API Call:**
     - Target `http://localhost:11434/api/generate` instead of the command-line buffer.
@@ -34,18 +35,27 @@ Relying on prompting LLMs to "output JSON only" frequently breaks when the model
 
 ## Implementation Status
 
-- [ ] Create `src/llm/ollama_client.js`.
-- [ ] Configure `fetch` against `localhost:11434/api/generate`.
-- [ ] Implement Zod to JSON Schema converter for the `format` payload.
+- [x] Create `src/llm/ollama_client.js` (Implemented as `scripts/llm/ollama_client.ts`).
+- [x] Configure `fetch` against `localhost:11434/api/generate`.
+- [x] Implement Zod to JSON Schema converter for the `format` payload.
 
 ## Verification & Tests
 
-**Test File:** `tests/llm_classification.test.js`
+**Test File:** `tests/llm/llm_classification.test.ts`
 
 **Test Requirements:**
 
-1. **API Contact (Mocks):** Mock the network layer to ensure the API call perfectly formats the payload with the JSON schema attached to the `format` property.
-   _(Note: Full end-to-end testing against local Ollama should be treated carefully in CI/CD, but we can assert the payload construction)._
+- [x] **API Contact (Mocks):** Mock the network layer to ensure the API call perfectly formats the payload with the JSON schema attached to the `format` property.
+      _(Note: Full end-to-end testing against local Ollama should be treated carefully in CI/CD, but we can assert the payload construction)._
 
 **Execution:**
-`npm run test tests/llm_classification.test.js`
+`npm test`
+
+---
+
+## 🚀 Improvements & Next Steps
+
+While the core functionality is mathematically proven, the following optimizations remain pending for Phase 3 scaling:
+
+1. **Component Consolidation Pipeline:** Because the LLM is now discovering blocks "Bottom-Up" (e.g. producing `StaffGrid` and `OurTeam`), we need a script to cluster and normalize these schemas into a master `fotocopy.components.json` config. You (the developer) will then approve this generated schema before moving to Phase 4.
+2. **Temperature & Concurrency tuning:** Ollama requests are currently processed synchronously in a simple loop. Batch concurrency limits via `p-limit` or similar should be introduced to maximize localized GPU inference throughput without crashing local RAM.

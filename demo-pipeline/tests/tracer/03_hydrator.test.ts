@@ -45,7 +45,7 @@ describe("Hydrator Engine (Phase 0, Step 3)", () => {
         page_id: "error_page",
         blocks: [
           {
-            blockType: "Hero",
+            inferredBlockType: "Hero",
             confidence: 0.1,
             mappings: {
               titleNodeId: "999", // Does not exist

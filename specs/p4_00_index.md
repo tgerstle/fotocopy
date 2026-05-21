@@ -30,6 +30,7 @@ The generated `.prompt.md` file automatically includes:
 
 1. **[W3C Design Token Integration](./p4_01_design_tokens.md)** - Consuming the strictly formatted W3C DTCG styles extracted in Phase 1 directly into Tailwind and Copilot contexts without translation.
 2. **[Automated Component Prompts](./p4_02_prompt_generator.md)** - Logic to automatically construct `.prompt.md` files containing Zod definitions and Tokens for GitHub Copilot.
+3. **[Global Pipeline Runner](./p4_03_pipeline_runner.md)** - A unified Node.js executable that acts as the master conductor for the entire backend data extraction and structure engine.
 
 - Copilot generates the perfectly typed React component.
 - The engineer mounts it into `demo-frontend`, and the final visual Q/A is verified.

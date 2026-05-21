@@ -43,7 +43,7 @@ export async function hydrate(
     resolvedData.designTokens = tokens;
 
     return {
-      blockType: block.blockType,
+      blockType: block.inferredBlockType,
       data: resolvedData,
     };
   });

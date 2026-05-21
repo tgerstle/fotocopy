@@ -41,31 +41,32 @@ The engine does not link out to legacy domains for images or stylesheets, nor do
 **Goal:** Prove the data structure works _first_.
 We build the final output—a Next.js site powered by mock JSON—_before_ writing any extraction logic. This live sandbox acts as a testbed for schema changes during development before backend code is written.
 
-### Phase 1: Orchestration Foundation & Discovery
+### Phase 1: Orchestration Foundation & Discovery (Completed)
 
 The initial stage establishes a Node.js orchestration layer designed to crawl and snapshot existing digital properties accurately. The crawler heavily leverages **Contract-Driven Testing**, benchmarking its raw layout extraction and HTML dumping against our strictly typed Zod schemas. The benchmark site for pipeline development is `css-snacks.com`.
 
 - **Global Configuration & Hooks (`fotocopy.config.ts`):** The orchestration engine is built to be strictly site-agnostic. All site-specific logic (e.g., LLM host endpoints, page categorization regex routing, and pre/post payload hooks) is defined in a standard user configuration file injected into the pipeline at runtime.
 - **Adaptive Crawler Repurposing:** We utilize our existing **Adaptive Web Auditor (site-scanner)**. Its robust **Scenario System** is heavily relied upon to navigate logic-gate blockers like modals, cookie banners, and interstitials that reliably derail standard scrapers.
-- **Visual Box Model Capture:** Playwright is configured not merely as a text-scraper but as a layout engine context. It captures spatial logic via `getBoundingClientRect()` and `getComputedStyle()`, retaining actual component geometry.
-- **Cost-Efficient Local AI Inference:** To bypass exorbitant API overhead for thousands of page executions, we deploy **Ollama utilizing the Gemma 2 model** locally. It serves as the primary inference engine for resolving component layout intents.
+- **Visual Box Model Capture:** Playwright is configured not merely as a text-scraper but as a layout engine context. It captures spatial logic via `getBoundingClientRect()` and `getComputedStyle()`, retaining actual component geometry. (Added computed positions, widths, and background colors to facilitate offline math).
 
-### Phase 2: Structural Intersection & Content Stripping
+### Phase 2: Structural Intersection & Content Stripping (Completed)
 
-Before LLM classification happens, the dataset must be purged of repetitive noise, and global templates must be recognized to prevent redundant processing.
+Before LLM classification happens, the dataset must be purged of repetitive noise, and global templates must be recognized to prevent redundant processing. We rely on mathematically offline tag-agnostic parsing rather than raw HTML scraping.
 
-- **Global Region Slicing (Hashing):** The engine executes a structural hashing function across multiple generated DOM trees. Elements identified on >90% of a site's pages are algorithmically flagged as global boundaries (Header/Footer/Sidebar) and purged from the primary page payload.
-- **Template Inference & Collection Mapping:** The engine analyzes URL topologies (e.g., `/blog/*`) and compares the structural DOM hashes of the stripped content. If 50 pages share identical DOM geometry and semantic tags (like `og:type="article"`), they are clustered into a "Page Type/Collection" (e.g., `Blog Post`). This allows the CMS to seed them into typed Collections rather than generic ad-hoc blocks.
-- **The Sibling Boundary Rule:** For unique, ad-hoc pages (Home, About), the remaining content is parsed into isolated, horizontal layout blocks. A top-level container that spans 100% viewport width with a substantial height is automatically detected as a component boundary.
-- **Design Token Extraction:** The system aggregates a CSS frequency map of the site to automatically generate a unified **Tailwind CSS theme configuration**, effectively converting chaotic legacy inline styles, HEX codes, and fonts into standard utility classes.
+- **Global Region Slicing (Hashing):** The engine executes a structural hashing function across multiple generated DOM trees (`hash_engine.ts`). Elements identified on >90% of a site's pages are algorithmically flagged as global boundaries (Header/Footer/Sidebar) based on their structural topology.
+- **The Purge Sync:** The `orchestrator.ts` script takes the generated global signatures and physically deletes matching DOM nodes via `data-awa-id` bindings, preventing global "div soup" from muddying inference payload arrays.
+- **Template Inference & Collection Mapping:** The engine analyzes URL topologies (e.g., `/blog/*`) and compares the structural DOM hashes of the stripped content (`template_inference.ts`). If pages share identical DOM geometry, they are clustered into a "Page Type/Collection" (e.g., `Blog Post`).
+- **The Sibling Boundary Rule:** For unique, ad-hoc pages (Home, About), the remaining content is parsed into isolated, horizontal layout blocks (`chunk_slicer.ts`). Boundaries are formed mathematically evaluating parent-width thresholds, margin gulfs, semantic delineators, and background color shifts, while bypassing sticky/absolute positioned elements entirely.
 
-### Phase 3: AI-Driven Classification & Data Structuring (The Heavy Lifting)
+### Phase 3: AI-Driven Classification & Data Structuring (Completed)
 
 This phase serves as the data transformation engine. Local LLMs handle the token-heavy processing of massive HTML dumps to generate strictly validated data structures without accruing API costs.
 
-- **Local Machine Learning:** The local `gemma4:e4b` model (via Ollama) handles all the brute-force processing. It is explicitly constrained via **Zod & JSON schemas** (Structured Outputs) to output classified intent arrays.
-- **Geometry-to-Schema Mapping:** Gemma uses the visual data previously acquired (spatial logic) to map raw chunks exclusively to approved CMS schema targets: e.g., `Hero`, `FeatureGrid`, `Accordion`, `FormBlock`.
-- **Absolute Data Fidelity:** Gemma is forbidden from writing the final copy. It uses an "ID Pointer Pattern" to map components back to raw DOM nodes, leaving literal string-extraction to the Node orchestrator.
+- **Offline Machine Learning API:** The local model (via Ollama REST) handles all chunk processing in `ollama_client.ts`. It is explicitly constrained by bridging TS Zod boundaries to `zod-to-json-schema`, passing JSON schemas natively into the `gemma` inference to demand perfectly modeled Structured Outputs.
+- **Geometry-to-Component Discovery:** The `batch_classifier.ts` iteratively passes Phase 2 layout chunks to the LLM backend. Rather than strictly forcing components into restricted buckets (e.g. `Hero`), the LLM acts as a Layout Architect, organically inventing contextual blockTypes (`inferredBlockType: StaffGrid`). These discovered variants are programmatically grouped/clustered locally later.
+- **Absolute Data Fidelity (The Hydration Scale):** The model is forbidden from answering with original text content. It returns a pure "ID Pointer Pattern" mapping `nodeId` coordinates. The Node orchestrator's `hydrator.ts` uses Cheerio to directly query `nodeMap.json` and perfectly hydrate the literals, ending AI hallucinations permanently spanning text.
+- **Pipeline Observability & CLI Diagnostics:** The orchestrator allows isolating specific phases utilizing runtime arguments (e.g., `--step=2 --verbose`). This yields powerful debugging by forcefully pausing migrations so you can visually verify bounded layouts or DOM geometries without being forced through the full extraction pipeline continuously.
+- **Component Consolidation & Concurrency Scaling:** The offline generation loop employs `p-limit` caps safely saturating native GPU RAM blocks. A final bridging phase inside `consolidator.ts` scans all structural objects spanning the outputs, discovering unique layouts mathematically to build a single `fotocopy.components.json` manifest dictionary limiting Phase 4 payload sizes securely.
 
 ### Phase 4: Component Scaffolding & Local Verification (Advanced LLMs)
 
