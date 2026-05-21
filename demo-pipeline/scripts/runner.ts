@@ -6,6 +6,11 @@ import { crawlAndCapture } from "./crawler/capture";
 import { processChunks } from "./llm/batch_classifier";
 import { consolidateComponents } from "./llm/consolidator";
 import { generatePrompts } from "./scaffolding/prompt_generator";
+import { classifyGlobals } from "./llm/globals_classifier";
+import { generateGlobalPrompts } from "./scaffolding/global_prompt_generator";
+import { generateManifests } from "./scaffolding/manifest_generator";
+import { downloadAssetsLocally } from "./assets/manager";
+
 
 // Placeholder imports for phase 2 since they were specced but not fully wired yet
 import { sliceIntoChunks } from "./intersection/chunk_slicer";
@@ -152,10 +157,48 @@ async function run() {
     try {
       await fs.access(tokensPath);
       verboseLog(`Design tokens loaded from: ${tokensPath}`);
+      
+      // 4.1. Manifest Generation
+      const manifestOutDir = path.join(__dirname, "../output/manifests");
+      console.log(`Generating page structure manifests...`);
+      await generateManifests(chunksDir, classificationOutput, outputCaptureDir, manifestOutDir);
+
       console.log(`Generating Copilot Prompts using Tokens & Manifest...`);
+
       await generatePrompts(manifestPath, tokensPath, promptsDir);
     } catch(e) {
-      console.warn("Unable to execute template generation due to missing tokens or manifest.");
+      console.warn("Unable to execute template generation due to missing tokens or manifest.", e);
+    }
+  }
+
+
+  // ==== STEP 5: GLOBAL COMPONENTS ====
+  if (targetStep === 0 || targetStep === 5) {
+    logPhase("Step 5: Phase 5.1 (Global Scaffolding)");
+    const chunksDir = path.join(__dirname, "../output/chunks");
+    const outputCaptureDir = fotocopyConfig.outputDir;
+    const globalsManifestPath = path.join(chunksDir, "globals_manifest.json");
+    const globalsResultPath = path.join(__dirname, "../output/hydration/llm_globals_map.json");
+    const globalPromptsDir = path.join(__dirname, "../output/prompts/globals");
+    const tokensPath = path.join(outputCaptureDir, "css-snacks.com_tokens.json");
+
+    try {
+      await fs.access(globalsManifestPath);
+      console.log(`Queueing global footprints for Singleton shell block discovery...`);
+      await classifyGlobals(globalsManifestPath, globalsResultPath, 2);
+      
+      
+      console.log(`Generating Global Singleton Shell Prompts...`);
+      await generateGlobalPrompts(globalsManifestPath, globalsResultPath, tokensPath, globalPromptsDir);
+
+      // Phase 5.2 - Local Asset Fetching
+      console.log(`Downloading discovered media assets locally...`);
+      const manifestOutDir = path.join(__dirname, "../output/manifests");
+      const publicAssetsDir = path.join(__dirname, "../../demo-frontend/public/assets");
+      await downloadAssetsLocally(manifestOutDir, publicAssetsDir, fotocopyConfig.testTargetUrl || "");
+
+    } catch(e) {
+      console.log("Could not process globals. Ensure globals_manifest.json exists.", e);
     }
   }
 

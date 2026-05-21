@@ -33,9 +33,12 @@ Example Output:
   "mappings": {
     "title": "12",
     "description": "13",
-    "cta_button": "14"
+    "cta_button": "14",
+    "background_image": "15",
+    "avatar": "16"
   }
 }
+Note: If you see IMG tags, SVG tags, or blocks that suggest media assets, be sure to map them (e.g. "image": "ID", "icon": "ID").
 
 DOM Nodes:
 ${chunkHtml}
@@ -77,4 +80,45 @@ ${chunkHtml}
     }
     throw error;
   }
+}
+
+export async function generateCode(
+  prompt: string,
+  options: OllamaOptions = {}
+): Promise<string> {
+  const model = options.model || "gemma4:e4b";
+  const endpoint = options.endpoint || "http://localhost:11434/api/generate";
+  const temperature = options.temperature ?? 0.1;
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      prompt,
+      stream: false,
+      options: {
+        temperature,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ollama API Error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  
+  // Extract just the code from markdown tags if present
+  let codeStr = data.response;
+  if (codeStr.includes('```')) {
+    const match = codeStr.match(/```(?:tsx|jsx|ts|js)?\n([\s\S]*?)```/);
+    if (match && match[1]) {
+      codeStr = match[1];
+    }
+  }
+  
+  return codeStr.trim();
 }

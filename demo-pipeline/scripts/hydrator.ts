@@ -34,7 +34,22 @@ export async function hydrate(
       }
 
       if (el.is("img")) {
-        resolvedData[fieldName] = el.attr("src");
+        resolvedData[fieldName] = {
+          src: el.attr("src") || "",
+          alt: el.attr("alt") || "",
+          title: el.attr("title") || ""
+        };
+      } else if (el.is("a") && (el.attr("href") || "").match(/\.(pdf|mp4|webm|png|jpg|jpeg|gif|svg)$/i)) {
+        resolvedData[fieldName] = {
+          src: el.attr("href") || "",
+          alt: el.text().trim() || el.attr("title") || el.attr("aria-label") || ""
+        };
+      } else if ((el.attr("style") || "").includes("background-image")) {
+        const bgMatch = el.attr("style").match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i);
+        resolvedData[fieldName] = {
+          src: bgMatch ? bgMatch[1] : "",
+          alt: el.attr("aria-label") || el.text().trim() || ""
+        };
       } else {
         resolvedData[fieldName] = el.text().trim();
       }

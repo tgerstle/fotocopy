@@ -24,3 +24,7 @@ Every spec file MUST include a **Verification & Tests** section.
 - `docs/` - Living documentation representing the current codebase (e.g., `handoff.md`, API references).
 - `tests/` - The unified test suite (`vitest`).
 - `src/` - Application logic.
+
+## 4. Scaffold Options
+The project supports turning LLM Prompts directly into .tsx boilerplate. 
+Toggle `llm.autoGenerateComponents: true` in `fotocopy.config.ts` to enable physically writing files to `output/components/` as the pipeline finishes.

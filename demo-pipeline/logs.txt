@@ -1,0 +1,47 @@
+🎯 Pipeline focused on Step 5 only.
+
+========================================
+🚀 STARTING Step 5: Phase 5.1 (Global Scaffolding)
+========================================
+
+Queueing global footprints for Singleton shell block discovery...
+Processing global hash d19d19a1... via LLM classification...
+Processing global hash 80ac0565... via LLM classification...
+Failed to classify global d19d19a1527ff3b76cc6e8a98014830e35b45cab5c53018556df44ac40d157c9: [TypeError: fetch failed] {
+  [cause]: HeadersTimeoutError: Headers Timeout Error
+      at FastTimer.onParserTimeout [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/dispatcher/client-h1.js:749:28)
+      at Timeout.onTick [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/util/timers.js:162:13)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7) {
+    code: 'UND_ERR_HEADERS_TIMEOUT'
+  }
+}
+Processing global hash 5cc77f08... via LLM classification...
+Failed to classify global 80ac05650e848e1cd040556127a92009a1c86ea45ab943a2311373d3bb2d0383: [TypeError: fetch failed] {
+  [cause]: HeadersTimeoutError: Headers Timeout Error
+      at FastTimer.onParserTimeout [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/dispatcher/client-h1.js:749:28)
+      at Timeout.onTick [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/util/timers.js:162:13)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7) {
+    code: 'UND_ERR_HEADERS_TIMEOUT'
+  }
+}
+Processing global hash 7cd2520c... via LLM classification...
+Processing global hash 4bd081ed... via LLM classification...
+Failed to classify global 7cd2520cdcacbbd8b2d1480581596c35f9d166393806c7511161c29306e75274: [TypeError: fetch failed] {
+  [cause]: HeadersTimeoutError: Headers Timeout Error
+      at FastTimer.onParserTimeout [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/dispatcher/client-h1.js:749:28)
+      at Timeout.onTick [as _onTimeout] (/Users/tgerstle/code/fotocopy/node_modules/undici/lib/util/timers.js:162:13)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7) {
+    code: 'UND_ERR_HEADERS_TIMEOUT'
+  }
+}
+Generating Global Singleton Shell Prompts...
+Generated 2 global prompt templates in /Users/tgerstle/code/fotocopy/demo-pipeline/output/prompts/globals
+
+========================================
+Pipeline Total Execution Time: 10:04.228 (m:ss.mmm)
+✅ EXEUCTION COMPLETE
+========================================
+

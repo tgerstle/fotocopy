@@ -9,8 +9,8 @@ export const HeroBlockDataSchema = z.object({
 });
 
 export const CMSBlockSchema = z.object({
-  blockType: z.literal("Hero"),
-  data: HeroBlockDataSchema,
+  blockType: z.string(),
+  data: z.record(z.any()),
 });
 
 export const CMSPageSchema = z.object({

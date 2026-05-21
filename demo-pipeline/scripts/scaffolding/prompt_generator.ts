@@ -1,3 +1,5 @@
+import { fotocopyConfig } from '../../../fotocopy.config';
+import { generateCode } from '../llm/ollama_client';
 import * as fs from "fs/promises";
 import * as path from "path";
 import { ComponentsManifest } from "../llm/consolidator";
@@ -40,17 +42,39 @@ Use Tailwind CSS classes exclusively. Here are the W3C Design Tokens extracted f
 ${tokensString}
 \`\`\`
 
+# Component Best Practices (Skills)
+- Use standard React/Next.js semantic HTML semantics (semantic \`<section>\`, \`<article>\`, \`<aside>\`, \`<nav>\`).
+- Design for Accessibility (A11y): Include \`aria-labels\`, use properly nesting \`h1-h6\` tags.
+- Consider empty states or optional props (e.g. \`{subtitle && <p>{subtitle}</p>}\`).
+- Use the \`lucide-react\` library for icons if standard icons are missing or required.
+
 # Instructions
 
 1. Output \`${componentName}.tsx\`.
 2. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary.
 3. Import \`next/image\` for the backgroundImage.
 4. Style the component matching standard modern UI practices, using the W3C tokens provided.
+5. STRICT TAILWIND RULE: DO NOT use arbitrary hex codes or hardcoded colors like \`bg-[#2F345F]\` or \`text-[#3d3d44]\`. You MUST USE semantic Tailwind variables mapped to the tokens provided above (e.g. \`bg-[var(--color-bluedark)]\` or \`text-[var(--color-black)]\`). Your output must be fully themeable.
 `;
+
 
     const outPath = path.join(outputDir, `${componentName}.prompt.md`);
     await fs.writeFile(outPath, promptContent);
     generatedFiles.push(outPath);
+
+    // Provide the component back to the LLM if config is opted in
+    if (fotocopyConfig.llm.autoGenerateComponents) {
+      console.log(`Autoscaffolding component: ${componentName}.tsx via LLM...`);
+      try {
+        const componentCode = await generateCode(promptContent, fotocopyConfig.llm);
+        const componentsDir = path.resolve(__dirname, '../../../demo-frontend/src/components');
+        await fs.mkdir(componentsDir, { recursive: true });
+        await fs.writeFile(path.join(componentsDir, `${componentName}.tsx`), componentCode);
+      } catch (err) {
+        console.error(`Failed to generate code for ${componentName}`, err);
+      }
+    }
+
   }
 
   console.log(`Generated ${generatedFiles.length} prompt templates in ${outputDir}`);

@@ -135,12 +135,20 @@ This document translates the high-level project outline into concrete, actionabl
   - **Detail:** The catch-all page component must read the `slug` from the URL, locate the corresponding JSON file in the manifests folder, and use that file to drive the rendering of the component structure.
   - **Deliverable:** A functional, local Next.js route that proves the manifest loading works.
 
-### **4.3. Visual QA Loop**
+### **4.3. Component Prompt & Auto-Scaffolding Generation**
+
+- **Need:** Transform the structured LLM block definitions from Phase 3 into physical React `.tsx` code.
+- **Technical Implementation (How):**
+  - **Tool:** Prompt Generator & Ollama (LLM Wrapper).
+  - **Detail:** Construct rich Copilot prompts using standard React and semantic HTML skills alongside inferred component schemas. If configured (`autoGenerateComponents: true`), the system routes these prompts back through the LLM to directly write the physical `.tsx` files bridging Next.js to Tailwind tokens.
+  - **Deliverable:** Generated `.prompt.md` files for manual Copilot usage, or physical `.tsx` boilerplate outputted directly to `output/components/`.
+
+### **4.4. Visual QA Loop**
 
 - **Need:** To visually validate that the component scaffolding actually renders correctly, especially for interactive parts.
 - **Technical Implementation (How):**
   - **Tool:** Standard Next.js development workflow (`npm run dev`).
-  - **Detail:** The process requires ensuring that any custom component scaffolds (e.g., a complex data visualization block) are placed into a designated, renderable directory (e.g., `/components/scaffolds/`) and correctly imported/utilized by the catch-all route.
+  - **Detail:** The process requires ensuring that any custom component scaffolds generated are placed into a designated, renderable directory (e.g., `/demo-frontend/src/components/`) and correctly imported/utilized by the catch-all route.
   - **Deliverable:** Successful local build and visual confirmation of component rendering.
 
 ---
@@ -149,7 +157,15 @@ This document translates the high-level project outline into concrete, actionabl
 
 **Objective:** Move the verified, working local site to the high-availability Cloudflare edge.
 
-### **5.1. Media & Asset Migration**
+### **5.1. Global Layout Scaffolding (Singletons)**
+
+- **Need:** Extract shared application shells (Headers, Navigations, Footers) and generate strict wrapper components around Next.js `children`.
+- **Technical Implementation (How):**
+  - **Tool:** Global Classifier and Global Prompt Generator.
+  - **Detail:** Iterating across the purged structural layout nodes (removed by the hashing orchestrator in Phase 2.1), we pass isolated chunks into the LLM classifier specifically requesting Singleton definitions alongside reference HTML. We then generate Copilot Prompts appending the `children` prop architecture rules.
+  - **Deliverable:** Individual Markdown files describing overarching global shell layouts (e.g., `Navigation.prompt.md`), ready for Next.js Layout rendering.
+
+### **5.2. Media & Asset Migration**
 
 - **Need:** All images, SVGs, and documents must be migrated from legacy hosting to a modern, CDN-backed storage solution.
 - **Technical Implementation (How):**
@@ -161,7 +177,7 @@ This document translates the high-level project outline into concrete, actionabl
     4.  Crucially, update _every_ instance of the asset URL within the JSON manifests and components to the new `r2://` public URL prefix.
   - **Deliverable:** All assets in R2, and all content references pointing to R2.
 
-### **5.2. Database Seeding (CMS/SQL)**
+### **5.3. Database Seeding (CMS/SQL)**
 
 - **Need:** To populate the authoritative content store (both CMS and relational database).
 - **Technical Implementation (How):**
@@ -171,7 +187,7 @@ This document translates the high-level project outline into concrete, actionabl
     2.  **D1/SQL:** Write a script that iterates through all blueprints and executes `INSERT`/`UPDATE` statements against the Cloudflare D1 database for relational or key/value data.
   - **Deliverable:** Successfully populated CMS and D1 instances, representing the site's finalized content model.
 
-### **5.3. Edge Deployment**
+### **5.4. Edge Deployment**
 
 - **Need:** Deploy the finalized Next.js application bundle and configuration files to the edge network.
 - **Technical Implementation (How):**

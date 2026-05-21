@@ -19,5 +19,7 @@ export const fotocopyConfig = {
     model: "gemma4:26b",
     endpoint: "http://localhost:11434/api/generate",
     temperature: 0.1,
+    // Feed component prompts back to Ollama to generate physical .tsx files
+    autoGenerateComponents: true,
   },
 };
