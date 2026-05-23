@@ -1,0 +1,36 @@
+--- scripts/pipeline_runner.ts
++++ scripts/pipeline_runner.ts
+@@ -140,6 +140,12 @@
+ 
+ type PhaseFunction = (record: UrlRecord) => Promise<void>;
+ 
++export interface PipelineError {
++  phase: string;
++  url: string;
++  error: string;
++}
++
+ /**
+  * Generic Batch Processor
+  * Claims records of a specific status and runs the phase worker.
+@@ -148,6 +154,7 @@
+   phase: PipelinePhase,
+   nextPhase: PipelinePhase,
+   workerFn: PhaseFunction,
++  errorsArg?: PipelineError[]
+ ) {
+   let pending = true;
+   let processedCount = 0;
+@@ -171,8 +178,11 @@
+       } catch (error: any) {
+         console.error(
+-          `[ERROR] Phase ${phase} failed for URL ${record.url}: ${error.message}
+-`,
++          `[ERROR] Phase ${phase} failed for URL ${record.url}: ${error.message}`
+         );
++        if (errorsArg) {
++          errorsArg.push({ phase, url: record.url, error: error.message || String(error) });
++        }
+         handleFailure(record, phase);
+       }
+     });

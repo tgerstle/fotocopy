@@ -1,40 +1,39 @@
-# Phase 4, Step 1: W3C Design Token Synchronization
+# Phase 4, Step 1: Semantic Design Token Mapping
 
-Because Phase 1's Crawler explicitly extracts legacy CSS variables formatted to the **W3C Design Tokens Community Group (DTCG) Specification**, Phase 4 can perfectly map legacy styles into modern React architecture effortlessly without fragile translation scripts.
+In the updated architecture, we do not rely on the LLM to invent design tokens or blindly guess hex codes. Instead, Phase 2.3's `token_extractor.ts` provides a mathematically generated CSS dictionary natively aligned with the `shadcn/ui` ecosystem. Phase 4 maps these into our Sandbox.
 
-## 1. Native Framework Tooling
+## 1. The Strict Semantic Token Schema
 
-The W3C format standardizes tokens using `$value` and `$type` properties. By enforcing this format natively in Phase 1:
+To put as little strain on the generative LLM as possible, we supply it with a highly constrained, predefined list of semantic variables. The extractor parses the wild legacy CSS and quantizes it into exactly these slots:
 
-1. **Tooling Compatibility:** Tools like Style Dictionary or Tailwind plugins can consume our outputs natively without custom adapters.
-2. **AI Comprehension:** GitHub Copilot acts with much higher accuracy when processing standard W3C JSON structures than proprietary objects.
+### Base Variables (Mapped to Tailwind Utility Classes)
 
-**Example Data Received from Phase 1:**
-
-```json
-{
-  "color": {
-    "primary": {
-      "$value": "#E24A4A",
-      "$type": "color"
-    },
-    "background": {
-      "$value": "#FFFFFF",
-      "$type": "color"
-    }
-  },
-  "fontFamily": {
-    "sans": {
-      "$value": "Inter, sans-serif",
-      "$type": "fontFamily"
-    }
-  }
-}
-```
+- **Colors (RGB space):**
+  - `--background` / `--foreground` (Global body)
+  - `--card` / `--card-foreground` (Cards)
+  - `--popover` / `--popover-foreground` (Modals/Popovers)
+  - `--primary` / `--primary-foreground` (Primary buttons, active states)
+  - `--secondary` / `--secondary-foreground` (Secondary actions)
+  - `--muted` / `--muted-foreground` (Disabled or subtle backgrounds)
+  - `--accent` / `--accent-foreground` (Hover states)
+  - `--destructive` / `--destructive-foreground` (Error states)
+  - `--border`, `--input`, `--ring` (Layout lines and focus rings)
+- **Typography:**
+  - `--font-sans` (Default body text, e.g., 'Inter', sans-serif)
+  - `--font-heading` (Display headers, e.g., 'Cal Sans', sans-serif)
+  - `--font-mono` (Monospace components)
+- **Geometry & Spacing:**
+  - `--radius` (Global component corner rounding, e.g. `0.5rem`)
+  - `--container-padding` (Standardized page edge padding, e.g. `2rem`)
+  - `--section-spacing` (Vertical gap between major horizontal bands, e.g. `4rem` or `6rem`)
+  - _Note on Spacing Best Practices:_ We **do not** use step variables like `--pad-1` or `--space-s`. Re-inventing the spacing scale as CSS variables defeats the purpose of Tailwind and confuses the LLM. Instead, for inner component margins/paddings, the extraction engine rounds physical pixels (e.g. `17px` padding inside a button) directly to native Tailwind utility steps (e.g., `p-4`, `gap-2`). The LLM is heavily trained on standard Tailwind, so letting it use `p-4` natively relies on its existing knowledge and reduces prompt bloat.
 
 ## 2. Integration into Component Scaffolding
 
-When generating the Next.js frontend, these tokens inform two separate systems:
+When generating the React frontend, these semantic tokens are used in two ways:
 
-1.  **Global Tailwind Config (`tailwind.config.js`)**: A script transforms the W3C JSON into the Tailwind theme variables.
-2.  **Copilot Prompts (`*.prompt.md`)**: The raw JSON is injected into our automated Copilot Prompts (Step 2). Because Copilot understands W3C semantics, if a component needs to render a colored background, Copilot will correctly map it to `bg-color-primary` (or whatever the standard Tailwind tail translates to) purely by reading the Token ontology.
+1.  **Global Injection (`globals.css`)**: The parsed RGB variables are physically written into the `/src/index.css` or `globals.css` of the `test-sandbox` testbed.
+2.  **Explicit Context Prompting**: We inject the literal CSS token names directly into the LLM system prompt. The LLM is explicitly barred from generating arbitrary hex values. It is told:
+    _"You are styling a shadcn/ui component. You MUST ONLY use the semantic prefix tailwind classes: `bg-primary`, `text-muted-foreground`, `border-border`, `rounded-[var(--radius)]`. Do NOT write `bg-[#E24A4A]`."_
+
+By drastically narrowing the choices the LLM has to make regarding colors, cognitive strain drops significantly, preventing syntax hallucinations and ensuring 100% theme consistency across generated primitives.

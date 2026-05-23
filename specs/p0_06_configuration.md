@@ -6,7 +6,7 @@ This spec proves that our data pipeline can be intercepted and modified by a use
 
 ## 1. The Configuration Schema & File
 
-Create `/demo-pipeline/schemas/config.ts`:
+Create `/packages/core/schemas/config.ts`:
 
 ```typescript
 import { z } from "zod";
@@ -35,7 +35,7 @@ export const FotocopyConfigSchema = z.object({
 export type FotocopyConfig = z.infer<typeof FotocopyConfigSchema>;
 ```
 
-Create exactly what a user would define in `/demo-pipeline/fotocopy.config.ts`:
+Create exactly what a user would define in `/packages/core/fotocopy.config.ts`:
 
 ```typescript
 import { FotocopyConfig } from "./schemas/config";

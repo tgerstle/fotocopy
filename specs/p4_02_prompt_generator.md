@@ -1,44 +1,44 @@
-# Phase 4, Step 2: Automated Prompts (Copilot Scaffolding)
+# Phase 4, Step 2: DAG Component Scaffolding & AST Guards
 
-To maximize code quality and lower developer overhead, the Node Orchestrator automatically prepares fully-qualified context files for GitHub Copilot.
+To maximize code quality and lower LLM processing strain, the Node Orchestrator executes code generation automatically using a **Directed Acyclic Graph (DAG)** flow combined with an aggressive syntactic safety net.
 
-We do not trust Gemma (our extraction LLM) to write React code. Instead, we use Gemma for data, and Copilot for code.
+We do not generate massive monolithic files in a single pass. Instead, complexity is chunked.
 
-## 1. The Prompt Generator Script
+## 1. The DAG Scaffolding Logic
 
-**Goal:** For every unique block type defined in the Zod schemas (e.g., `HeroBlockDataSchema`), construct a `.prompt.md` file that guides GitHub Copilot perfectly.
+**Goal:** Transform the LLM's classification blocks (e.g., `HeroBlockDataSchema`) into physical `.tsx` files utilizing `shadcn/ui` and our Semantic Design Tokens.
 
 **Implementation Logic:**
-The Orchestrator reads the newly generated `fotocopy.components.json` (from Phase 3 Consolidation) and iterates its keys. When it finds a component definition, it writes to `prompts/Hero.prompt.md`:
+Rather than asking for `Footer.tsx` directly:
 
-```markdown
-# Context
+1. **Map (Primitive Generation):** The planner prompts the LLM to output small primitive files (e.g. `SocialLink.tsx`). Since the scope is tiny, the model achieves a ~99% success rate without hallucination.
+2. **Reduce (Parent Assembly):** The Orchestrator passes the completed Typescript interfaces of the primitives to the LLM and asks it to aggregate them into the final `FooterLayout.tsx`.
 
-You are building a Next.js Server Component that acts as a UI block for Payload CMS.
-The target block is: `Hero`
+The System Prompt injected into these local models includes explicit anchors:
 
-# Strict TypeScript Interface
+- Strict requirements to use `@/components/ui/...` paths.
+- Mandatory enforcement of the Semantic Token Dictionary (e.g., `bg-primary`, `text-foreground`).
+- Instructions banning `useEffect` or unneeded client logic unless explicitly mapped.
 
-The component MUST accept exactly these props derived directly from the consolidated schema shape:
-{INJECT_COMPONENT_SCHEMA_HERE}
+## 2. In-Memory Syntactic Guards (Self-Healing)
 
-# Design System
+Because LLMs can still occasionally drop JSX brackets or misspell tags (e.g., `<rabutton>`):
 
-Use Tailwind CSS classes exclusively. Here are the W3C Design Tokens extracted from the site:
-{INJECT_W3C_TOKENS_HERE}
+1.  **AST Validation:** Before any `.tsx` text is written to the Sandbox disk, it is streamed into an AST Parser (like the TypeScript Compiler API).
+2.  **Validation Catch:** If the parser throws a typical syntax error (`Expected corresponding JSX closing tag`), the script traps the exception.
+3.  **Reflection Loop:** The Orchestrator calls the LLM _again_, attaching the exact error message and the broken code, instructing it: `"Fix this specific syntax error."`
+4.  **Fallback Limits:** If the loop fails twice, the component evaluates as a generic `ErrorBoundary` wrapper to ensure Vite and Storybook never crash.
 
-# Instructions
+## 3. Hydrating Live Data into Storybook
 
-1. Output `Hero.tsx`.
-2. Do not use client hooks (`useState`, `useEffect`) unless explicitly necessary.
-3. Import `next/image` for the backgroundImage.
-4. Style the component matching standard modern UI practices, using the W3C tokens provided.
-```
+Fotocopy connects the live legacy data directly into the newly generated React components so stakeholders can preview the migration identically to the live site.
 
-## 2. The Developer Handoff
+**Implementation Logic:**
+1. During Phase 3 (`hydrate()`), a strict JSON CMS payload is generated comprising the text, images, and links extracted from the live DOM. 
+2. The orchestrator script (`pipeline_runner.ts`) parses this hydrated JSON from the `/fotocopy-metadata/hydration/` directory right before it calls `generatePrompts()`.
+3. The Prompt Generator receives this payload and locates the mock content representing the specific target block.
+4. The system prompt dynamically embeds this CMS data and commands the LLM to physically encode it as the `args` payload within the generated `.stories.tsx` file for Storybook.
 
-1. The Prompt Generator outputs `.prompt.md` files for every block found in `fotocopy.components.json`.
-2. The developer opens VS Code.
-3. The developer executes the prompt inside Copilot Chat (or uses `#file` references).
-4. Copilot scaffolds `Hero.tsx`.
-5. The developer moves it into `/components/blocks/Hero.tsx` and executes the Tracer Bullet visual tests to confirm.
+## 4. The Sandbox Artifact
+
+The final output is injected into `/test-sandbox/src/components`. Because all generated code ran the gauntlet of the AST Guard, was bound to pre-set tokens, and was hydrated with live JSON CMS data, a simple `npm run storybook` command successfully paints the local preview environment immediately.

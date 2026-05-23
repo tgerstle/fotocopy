@@ -29,7 +29,7 @@ Relying on prompting LLMs to "output JSON only" frequently breaks when the model
 5.  **Return & Re-Hydrate Data:**
     - The Node.js orchestrator receives the LLM's classification (e.g. `nodeId: 123`).
     - It uses `123` to look up the exact, un-altered string of HTML in the original snapshot, guaranteeing **100% data fidelity**.
-    - Resolves the finalized Data object to build the Next.js `route.json` manifests.
+    - Resolves the finalized Data object to build the `route.json` manifests.
 
 ---
 

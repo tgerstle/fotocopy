@@ -6,13 +6,13 @@ export const fotocopyConfig = {
   // URL Discovery Intake
   staticUrlList: [
     "https://www.css-snacks.com/",
-    "https://www.css-snacks.com/accessible-components/",
+    "https://www.css-snacks.com/guide/system-fonts-what-they-are-and-when-to-use-them/",
   ],
   sitemapUrl: "https://www.css-snacks.com/sitemap-index.xml",
-  intakeCsvPath: path.resolve(__dirname, "demo-pipeline/data/legacy-urls.csv"),
+  intakeCsvPath: path.resolve(__dirname, "packages/core/data/legacy-urls.csv"),
 
   // Output Directories
-  outputDir: path.resolve(__dirname, "demo-pipeline/output/live_capture"),
+  outputDir: path.resolve(__dirname, "packages/core/output/live_capture"),
 
   // LLM Configuration
   llm: {
@@ -22,4 +22,10 @@ export const fotocopyConfig = {
     // Feed component prompts back to Ollama to generate physical .tsx files
     autoGenerateComponents: true,
   },
+
+  // Plugins & Escape Hatches
+  plugins: [
+    { matcher: "iframe[src*='youtube.com']", tag: "PLUGIN:YOUTUBE" },
+    { matcher: "form.hubspot-form", tag: "PLUGIN:HUBSPOT" },
+  ],
 };

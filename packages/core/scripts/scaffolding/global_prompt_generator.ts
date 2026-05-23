@@ -1,0 +1,178 @@
+import { fotocopyConfig } from "../../../../fotocopy.config";
+import { generateCode } from "../llm/ollama_client";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { GlobalIntent } from "../llm/globals_classifier";
+import { parseAndHeal } from "./ast_guard";
+import { PipelineError } from "../pipeline_runner";
+
+export async function generateGlobalPrompts(
+  originalManifestPath: string,
+  manifestPath: string,
+  tokensPath: string,
+  outputDir: string,
+  sampleDataPayload?: Record<string, any>,
+  errorsArg?: PipelineError[],
+): Promise<string[]> {
+  const manifestRaw = await fs.readFile(manifestPath, "utf-8");
+  const manifest: Record<string, GlobalIntent> = JSON.parse(manifestRaw);
+  const originalManifestRaw = await fs.readFile(originalManifestPath, "utf-8");
+  const originalManifest = JSON.parse(originalManifestRaw);
+
+  const tokensRaw = await fs.readFile(tokensPath, "utf-8");
+  const tokensString = JSON.stringify(JSON.parse(tokensRaw), null, 2);
+
+  await fs.mkdir(outputDir, { recursive: true });
+
+  const generatedFiles: string[] = [];
+
+  const deduplicatedTypes = new Set<string>();
+
+  for (const [hash, def] of Object.entries(manifest)) {
+    let type = def.inferredBlockType;
+    type = type.replace(/[\'\":,{}].*/g, "").trim();
+    type = type.replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!type || type === "Unknown" || type === "N/A") continue;
+
+    // Safety check against LLM hallucinating giant string blocks
+    if (type.length > 40) {
+      type = type.substring(0, 40);
+    }
+
+    // Normalize to prevent duplicates of "SiteHeader"
+    if (deduplicatedTypes.has(type)) continue;
+    deduplicatedTypes.add(type);
+
+    const componentSampleData = sampleDataPayload
+      ? sampleDataPayload[type]
+      : null;
+    const sampleDataString = componentSampleData
+      ? `\n# Hydrated Mock Data (From Database)\nUse this exact data for the Storybook \`args\` so it renders realistically:\n\`\`\`json\n${JSON.stringify(componentSampleData, null, 2)}\n\`\`\`\n`
+      : "";
+
+    const promptContent = `# Context
+
+You are building a React Component that acts as a global UI Singleton Shell block.
+The target block is: \`${type}\`\n\n### Reference Footprint HTML\n\`\`\`html\n${originalManifest.elementsToRemove[hash] ? originalManifest.elementsToRemove[hash].join("\n") : "N/A"}\n\`\`\`
+${sampleDataString}
+# Architecture
+
+Since this is a Singleton Shell block (like a Header, Footer, or Navigation), it MUST accept \`children?: React.ReactNode\` as it will wrap page elements for layouts.
+
+# Design System
+
+Use Tailwind CSS classes exclusively. Here are the W3C Design Tokens extracted from the site:
+\`\`\`json
+${tokensString}
+\`\`\`
+
+# Layout Best Practices (Skills)
+- Global layout components like Navigations and Footers must be absolute semantics: \`<nav>\`, \`<header>\`, \`<footer>\`.
+- Design for Accessibility (A11y): Include "Skip to Content" links where applicable, ensure contrast.
+- Ensure the \`children\` prop is safely wrapped in a primary layout container (e.g., \`<main>\`).
+- Design using standard **shadcn/ui** layout patterns. Use common primitive component names (e.g., \`Button\`, \`Card\`, \`Sheet\`, \`NavigationMenu\`) to structure your output cleanly.
+- Use the \`lucide-react\` library for icons. However, do NOT import brand icons (e.g. Github, Twitter, Linkedin) from lucide-react, as they have been removed. Use purely semantic SVG or text fallbacks for social icons.
+
+# Instructions
+
+1. Output exactly two Markdown code blocks.
+2. In the first code block, output \`${type}.tsx\`. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary for mobile menus or interactions. Incorporate the \`children\` prop properly where appropriate.
+3. In the second code block, output a perfectly valid Storybook stories file named \`${type}.stories.tsx\`. Embed the provided JSON payload (if available) into the \`args\` so it renders realistically in isolation. Handle the \`children\` prop with dummy semantic HTML content in the story.
+4. Style the component matching standard modern UI practices, using the W3C tokens provided.
+5. STRICT TAILWIND RULE: DO NOT use arbitrary hex codes or hardcoded colors like \`bg-[#2F345F]\`. You MUST USE semantic Tailwind variables mapped to the tokens provided above (e.g. \`bg-[var(--color-bluedark)]\`). Your output must be fully themeable.
+`;
+
+    const outPath = path.join(outputDir, `${type}.prompt.md`);
+    await fs.writeFile(outPath, promptContent);
+    generatedFiles.push(outPath);
+
+    if (fotocopyConfig.llm.autoGenerateComponents) {
+      console.log(
+        `Autoscaffolding global layout component: ${type}.tsx via LLM...`,
+      );
+      try {
+        const generation = await generateCode(
+          promptContent,
+          fotocopyConfig.llm,
+        );
+
+        if (generation.component) {
+          const healedComponent = await parseAndHeal(
+            generation.component,
+            async (code, error) => {
+              console.log(
+                `[AST Guard] Reflection healing needed for ${type}: ${error}`,
+              );
+              const reflectPrompt = `The following React code has a syntax error: ${error}\n\nCode:\n\`\`\`tsx\n${code}\n\`\`\`\nFix it and output ONLY the valid tsx block.`;
+              const retryGen = await generateCode(
+                reflectPrompt,
+                fotocopyConfig.llm,
+              );
+              return retryGen.component;
+            },
+          );
+
+          if (healedComponent.success && healedComponent.code) {
+            const sandboxDir = path.resolve(
+              outputDir,
+              "../../../src/components/globals",
+            );
+            await fs.mkdir(sandboxDir, { recursive: true });
+
+            await fs.writeFile(
+              path.join(sandboxDir, `${type}.tsx`),
+              healedComponent.code,
+            );
+            if (generation.story) {
+              await fs.writeFile(
+                path.join(sandboxDir, `${type}.stories.tsx`),
+                generation.story,
+              );
+            }
+          } else {
+            console.error(`[AST Guard] Failed to heal ${type} after retries.`);
+            if (errorsArg) {
+              errorsArg.push({
+                phase: "GLOBAL_AST_GUARD",
+                url: `Global Component: ${type}`,
+                error: "Failed to heal AST syntax error after retries.",
+              });
+            }
+          }
+        }
+      } catch (err: any) {
+        console.error(`Failed to generate code for ${type}`, err);
+        if (errorsArg) {
+          errorsArg.push({
+            phase: "GLOBAL_SCAFFOLD",
+            url: `Global Component: ${type}`,
+            error: err.message || String(err),
+          });
+        }
+      }
+    }
+  }
+
+  console.log(
+    `Generated ${generatedFiles.length} global prompt templates in ${outputDir}`,
+  );
+  return generatedFiles;
+}
+
+if (require.main === module) {
+  (async () => {
+    try {
+      await generateGlobalPrompts(
+        path.join(__dirname, "../../output/chunks/globals_manifest.json"),
+        path.join(__dirname, "../../output/hydration/llm_globals_map.json"),
+        path.join(
+          __dirname,
+          "../../output/live_capture/css-snacks.com_tokens.json",
+        ),
+        path.join(__dirname, "../../output/prompts/globals"),
+      );
+    } catch (e) {
+      console.error("Global prompt generation failed:", e);
+    }
+  })();
+}

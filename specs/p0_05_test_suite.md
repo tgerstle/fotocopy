@@ -1,69 +1,73 @@
-# Phase 0: Test Suite & Iteration Loop
+# Phase 0: Test Suite & Iteration Loop (Mock-First TDD)
 
-The power of the Tracer Bullet is that it provides a fast, localized feedback loop. Because we are mocking the heavy lifting (Playwright scraping and Ollama inference), the entire Phase 0 pipeline should execute and validate in milliseconds.
+Because Fotocopy operates as a complex compiler pipeline where outputs of Phase 1 feed Phase 2, end-to-end testing becomes extremely slow when relying on live web scraping or live LLM inference.
 
-This enables a strict Test-Driven Development (TDD) loop using **Contract-Driven Testing**. If we need to change our data schema (e.g. adding `buttons` to a `Hero` block), we MUST update the mock files here, ensure the test suite passes, and ensure the UI renders correctly _before_ touching the actual Node Playwright scraping logic.
+We utilize a strict **Mock-First Test-Driven Development (TDD)** loop using **Contract-Driven Testing**. Before integrating any phase into the CLI Orchestrator (`pipeline_runner.ts`), we will build isolated tests for each stage. Each stage must mathematically prove it transforms a static mock input into the exact expected mock output.
 
-Furthermore, these Tracer Bullet tests act as our live system tests. As we build out Phase 1, we will evaluate the live Node Crawler output against these exact same Zod Schemas using a real-world benchmark target: **`css-snacks.com`**.
+## The Testing Pipeline (`npm run test:tracer`)
 
-## The testing pipeline (`npm run test:tracer`)
+We use **Vitest** for our test suite. The pipeline cascades through isolated stage-checks perfectly matching our architecture.
 
-We will use **Vitest** for our test suite due to its speed and native TypeScript support. A single command will cascade through the mock pipeline.
+### ✅ Stage 1: Validate Semantic Token Extraction (Phase 2.3)
 
-### Step 1: Validate Design Tokens
+**File:** `tests/tracer/01_token_extractor.test.ts`
 
-**File:** `tests/tracer/01_tokens.test.ts`
+- **Mock Input:** A raw JSON payload `mock_computed_styles.json` containing wild styling (e.g. `17px` padding, `#ff0000`, `rgb(20, 20, 20)`).
+- **Action:** Executes the `token_extractor.ts` quantization engine.
+- **Mock Output Assertion:**
+  1. Hex codes are parsed into raw rgb spacing natively for Tailwind.
+  2. Spacing is strictly snapped to multipliers of 4 (e.g., `17px` becomes `16px`).
+  3. Output correctly maps to the Shadcn Semantic ontology (`--primary`, `--background`).
+- **Why:** Proves we sanitize wild web designs into strict strict Tailwind schemas without LLM invention.
 
-- **Action:** Reads the static file `mock_capture/01_design_tokens.json`.
-- **Assertion:** Validates the structure against the strict W3C DTCG Zod Schema (ensuring `$value` and `$type` exist).
-- **Why:** Proves that the Phase 1 crawler natively outputs standard W3C definitions without structural defects.
+### ✅ Stage 2: Validate the Semantic ID Hydrator (Phase 3.2)
 
-### Step 2: Validate the LLM Pointers (Zod)
+**File:** `tests/tracer/02_hydrator.test.ts`
 
-**File:** `tests/tracer/02_llm_schema.test.ts`
+- **Mock Input:** `mock_llm_output.json` containing abstract pointer IDs (e.g., `"headingNodeId": "102"`) and `mock_raw_dom.html`.
+- **Action:** Executes the `hydrator.js` engine.
+- **Mock Output Assertion:**
+  1. The output `cms_ready.json` contains the literal string matching ID `102`.
+  2. If the LLM invents an ID that doesn't exist, the Hydrator handles it gracefully without a fatal crash.
+- **Why:** This guarantees our Zero-Hallucination policy. The LLM handles layout concepts, but the node parser guarantees text fidelity.
 
-- **Action:** Reads the static file `mock_llm/02_llm_output.json`.
-- **Assertion:** Parses it against the strict Zod schema (`LLMPageSchema`).
-- **Why:** This enforces the golden rule: The LLM output MUST contain only IDs (pointers) and block definitions. If you mock the LLM outputting real text (`"mapping": { "heading": "Welcome" }`) instead of IDs (`"mapping": { "headingNodeId": "102" }`), this test will immediately fail.
+### ✅ Stage 3: Validate the DAG Component Scaffolding (Phase 4.2)
 
-### Step 3: Validate the Hydrator (Zero Hallucination Proof)
+**File:** `tests/tracer/03_dag_orchestrator.test.ts`
 
-**File:** `tests/tracer/03_hydrator.test.ts`
+- **Mock Input:** A unified JSON semantic blueprint defining a `<Footer>` with links and a newsletter.
+- **Action:** Executes the `prompt_generator.ts` logic with a mocked LLM caller.
+- **Mock Output Assertion:**
+  1. The engine yields exactly 3 separate `Map` calls for micro-primitives (`SocialLink`, `NewsletterForm`, `FooterLayout`) rather than a single monolithic prompt.
+  2. The system prompt dynamically includes the literal `--primary` semantic token dictionary generated in Stage 1.
+- **Why:** Ensures we break tasks down to heavily lower cognitive strain on local LLMs.
 
-- **Action:** Executes the `hydrator.js` engine against the mock LLM output and the `01_raw_dom.html` snippet.
-- **Assertions:**
-  1.  **Extraction Accuracy:** The outputted `03_cms_ready.json` contains the literal string `"Welcome to Fotocopy"` for the `Hero` title.
-  2.  **Graceful Fallback:** If the LLM generates a mapping for an ID that does _not_ exist in the HTML (simulating an hallucination), the Hydrator logs a warning and returns `null` or empty text, rather than crashing the thread.
-- **Why:** This computationally guarantees that the LLM cannot invent data. The final output is strictly a string extracted from the original DOM.
+### ✅ Stage 4: Validate the AST Self-Healing Guard (Phase 4.2.b)
 
-### Step 4: Validate Next.js React Hydration
+**File:** `tests/tracer/04_ast_guard.test.ts`
 
-**File:** `tests/tracer/04_frontend.test.tsx`
+- **Mock Input:** A string containing deliberately broken React code: `export const Footer = () => <div>Hello</rabutton>`
+- **Action:** Run the string through the `AST Parser Guard`.
+- **Mock Output Assertion:**
+  1. The Parser natively throws an error intercept.
+  2. It immediately launches the "Reflection Loop" passing the context trace to the mocked LLM layer to heal the bracket.
+  3. Retries respect the strict `max_retries: 2` cap.
+- **Why:** Proves that broken LLM syntax will never crash the sandbox environment, catching JSX hallucination entirely in-memory.
 
-- **Action:** Mounts `<BlockRenderer blocks={layout} />` in a simulated DOM testing environment (using `@testing-library/react`), feeding it the newly generated `03_cms_ready.json`.
-- **Assertions:**
-  1.  The specific React components (e.g., `<Hero>`) are dynamically mounted.
-  2.  The text `"Welcome to Fotocopy"` exists in the rendered HTML.
-  3.  **Strict Styling:** The resulting rendered HTML contains the Tailwind classes generated in Step 1 (e.g., `className="text-primary"`).
-- **Why:** Proves the final CMS output seamlessly hydrates the frontend.
+### ✅ Stage 5: Validate the Template Sandbox Copy (Phase 4.4)
 
-### Step 5: Validate Error Boundaries & DLQ
+**File:** `tests/tracer/05_template_delivery.test.ts`
 
-**File:** `tests/tracer/05_resilience.test.ts`
-
-- **Action:** Passes severely corrupted LLM mock data (e.g., missing node IDs, completely hallucinated keys) into the `hydrator.js` script.
-- **Assertions:**
-  1. The Hydrator **does not throw a fatal Node Exception** or crash the test suite.
-  2. The script returns an error object, catching the fault internally.
-  3. A log is appended to a mock `.fotocopy/dlq.json` (Dead Letter Queue) capturing the failed context.
-- **Why:** Ensures that if page 499 fails on a production crawl, the system gracefully logs it and proceeds to page 500.
+- **Mock Input:** A fake `dummy_sandbox` folder and an `output_dir`.
+- **Action:** Executes the pipeline filesystem extraction phase.
+- **Mock Output Assertion:** The sandbox is fully cloned into the correct dynamic directory, stripped of `node_modules`. Components written in previous steps drop correctly into `src/components/globals`.
+- **Why:** Ensures absolute 100% decoupling from the core monorepo context.
 
 ## The Iteration Loop
 
-Whenever the schema needs upgrading, we follow this exact loop:
+Whenever the system capability needs upgrading, we follow this loop:
 
-1. **Modify the Source:** Update `01_raw_dom.html` (add an `<a href>` string) or `01_design_tokens.json`.
-2. **Modify the LLM Mock:** Update `02_llm_output.json` to include the specific `linkNodeId`.
-3. **Update the Zod Schema:** Ensure `LLMBlockSchema` allows `linkNodeId`.
-4. **Update the React Component:** Modify `Hero.tsx` so it renders an `<a>` tag expecting the new data shape.
-5. **Run the Suite:** `npm run test:tracer`. If all tests pass, the pipeline is proven, and we can hand the updated components and schemas over to the actual Crawler engineering team.
+1. **Update the Mock Source:** Add edge cases (e.g. `rgba(255,255,255,0.5)` logic) to `mock_computed_styles.json`.
+2. **Run the Suite:** `npm run test:tracer`. Watch the Token Extractor test fail.
+3. **Patch the Script:** Fix the `token_extractor.ts` regex.
+4. **Pass & Integrate:** Once all stages pass isolated I/O tests, integrate the updated script back into `pipeline_runner.ts` for full End-to-End Orchestrator testing.

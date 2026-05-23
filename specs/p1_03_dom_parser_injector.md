@@ -25,7 +25,7 @@ Relying entirely on text content leads to terrible AI hallucination. By grabbing
 4.  **Capture Design Tokens (`W3C DTCG Format`) & Interactive State Cleansing:**
     - Execute `window.getComputedStyle(el)`.
     - **Deep Token Extraction:** Instead of only scanning computed styles (which yields raw RGB values), iterate through `document.styleSheets` and CSS rules to find actual explicitly declared CSS custom properties (e.g., `--color-brand`, `--font-base`).
-    - **Crucial Requirement:** Format output strictly to the **W3C Design Tokens Community Group** object structure (`{ "color": { "primary": { "$value": "#fff", "$type": "color" } } }`). This prevents translation steps and ensures Next.js/Tailwind configs can consume CSS variables natively in Phase 4.
+    - **Crucial Requirement:** Format output strictly to the **W3C Design Tokens Community Group** object structure (`{ "color": { "primary": { "$value": "#fff", "$type": "color" } } }`). This prevents translation steps and ensures React/Tailwind configs can consume CSS variables natively in Phase 4.
     - Remove temporary state classes: Elements with `.active`, `.focus`, or `aria-current="page"` must be stripped out before logging data so the engine recognizes identical template headers across different pages.
     - Execute `window.getComputedStyle(el)`.
     - Extract minimal token hints: `{ backgroundColor, color, fontSize, fontFamily, padding, margin }`.

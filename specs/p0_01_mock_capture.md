@@ -4,7 +4,7 @@ This spec validates the output of what Playwright _would_ do in Phase 1 (Crawlin
 
 ## 1. The Mock File Structures
 
-Create a `/demo-pipeline/mock_capture` directory.
+Create a `/packages/core/mock_capture` directory.
 
 ### `01_globals_manifest.json` (Phase 2 Simulation)
 
@@ -46,7 +46,7 @@ This represents the CSS styles (`getComputedStyle`) Playwright scraped from the 
 }
 ```
 
-### Zod Schema (`/demo-pipeline/schemas/tokens.ts`)
+### Zod Schema (`/packages/core/schemas/tokens.ts`)
 
 To strictly validate the incoming tokens before generating Tailwind configs, we enforce a Zod schema validating the widespread W3C format:
 
@@ -67,10 +67,10 @@ export type DesignTokens = z.infer<typeof DesignTokenSchema>;
 
 ## 2. Token Sync Script (`sync-tokens.js`)
 
-**Goal:** Prove that extracted legacy design tokens can automatically configure the new Next.js front-end.
+**Goal:** Prove that extracted legacy design tokens can automatically configure the new React front-end.
 
-**Implementation (`/demo-pipeline/scripts/sync-tokens.js`):**
-A Node script that reads `01_design_tokens.json` and programmatically generates/updates a `tailwind.config.js` or a global `globals.css` (with CSS Variables) in the Next.js target directory.
+**Implementation (`/packages/core/scripts/sync-tokens.js`):**
+A Node script that reads `01_design_tokens.json` and programmatically generates/updates a `tailwind.config.js` or a global `globals.css` (with CSS Variables) in the React target directory.
 
 **Verification (Test):**
 

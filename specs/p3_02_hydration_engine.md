@@ -19,7 +19,7 @@ We bifurcate the AI inference completely from the Data Extraction.
     - The LLM returns `{ target: "Hero", nodeId: "294" }`.
     - The `hydrator.ts` maps `data-awa-id="294"` inside `nodeMap.json`.
 3.  **Literal Assignment:**
-    - Using Cheerio against the serialized DOM, the Node backend physically assigns `.text()` and `.attr('src')` into the Payload-ready JSON array.
+    - Using Cheerio against the serialized DOM, the Node backend physically assigns `.text()` and `.attr('src')` into the CMS-ready JSON array.
 4.  **Final Asset Composition:**
     - Hydrator injects global `DesignTokens` mapped from CSS into the manifest, exporting `04_manifest.json` for Copilot processing in Phase 4.
 

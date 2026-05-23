@@ -4,7 +4,7 @@ This spec validates the shape of the required output from Gemma (Phase 4). Cruci
 
 ## 1. The Mock File Structure
 
-Create `/demo-pipeline/mock_llm/02_llm_output.json`.
+Create `/packages/core/mock_llm/02_llm_output.json`.
 
 ```json
 {
@@ -27,7 +27,7 @@ Create `/demo-pipeline/mock_llm/02_llm_output.json`.
 
 This step strictly defines the Zod schema that the future orchestration engine will use to validate the LLM's response.
 
-**Implementation (`/demo-pipeline/schemas/llm.ts`):**
+**Implementation (`/packages/core/schemas/llm.ts`):**
 
 ```typescript
 import { z } from "zod";

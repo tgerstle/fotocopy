@@ -72,16 +72,23 @@ This document translates the high-level project outline into concrete, actionabl
         _Note: Elements strictly possessing sticky or absolute positional floats bypass boundaries completely to ensure sticky navigations/widgets don't erroneously split flow logic._
   - **Deliverable:** An ordered array of discrete "Chunk" block objects (e.g. `[Chunk 1, Chunk 2]`) representing physical vertical components cleanly passed onto the LLM classifier phase.
 
-### **2.3. Design Token Extraction**
+### **2.3. Design Token Extraction (Semantic Mapping)**
 
-- **Need:** To convert inconsistent, hardcoded, or messy legacy CSS values (colors, fonts, spacings) into a standardized, utility-first system (Tailwind CSS).
+- **Need:** To convert inconsistent codebase styles into a standardized, utility-first system. The system must rely on standard Tailwind baseline scales (spacing, typography) while clustering wild colors into a strict predefined **Semantic Token Schema** compatible with `shadcn/ui`.
 - **Technical Implementation (How):**
-  - **Tool:** Utilizing the CSS frequency map derived from captured `getComputedStyle()` data.
+  - **Tool:** A CSS frequency and semantic mapping script (`token_extractor.ts`) analyzing the captured `getComputedStyle()` payloads.
   - **Detail:**
-    1.  Run a parser over all unique `color` and `font-family` values found.
-    2.  Implement a color quantization algorithm (or map to a known palette) to reduce the palette to N primary colors.
-    3.  Generate a JSON object that adheres to the Tailwind `tailwind.config.js` structure for `theme.extend.colors` and `theme.extend.fontFamily`.
-  - **Deliverable:** A configuration file fragment (e.g., `generated-tokens.json`) ready to be imported into the main build process.
+    1.  **Baseline Tailwind Sizing:** Standardize routine geometric anomalies (padding, margins, font sizes) to the closest built-in Tailwind baseline scale (e.g., `17px` snaps to standard Tailwind `16px` -> `p-4` or `text-base`), preventing token bloat.
+    2.  **Color Space Conversion:** Parse all color strings into bare `r g b` or `h s l` space values to fully support Tailwind v4 opacity modifiers (e.g. `bg-primary/50`).
+    3.  **Semantic Quantization (The Mapping):** Run clustering to determine hierarchy, then map the discovered color palette and typography rules to a strict predefined global semantic list:
+        - `--background` / `--primary` / `--muted` / `--border` etc.
+        - `--font-sans` / `--font-heading`
+        - `--container-padding` / `--section-spacing` / `--radius`
+    4.  **Output:** Map these to CSS variables scoped to the `:root` selector in a `globals.css` file matching standard the `shadcn/ui` architecture.
+  - **Testing Strategy:**
+    - Create a mock `getComputedStyle()` JSON dataset with 10 variations of blue, whites, grays, and weird paddings.
+    - Run the extractor and verify using Jest/Vitest that the script correctly maps the dominant light colors to `--background`, the dominant blue to `--primary`, and snaps random `15px` padding to the Tailwind `16px` baseline.
+  - **Deliverable:** A `globals.css` stylesheet injected directly into the user template sandbox, alongside a Semantic Token dictionary passed into the LLM Generation.
 
 ---
 
@@ -117,80 +124,67 @@ This document translates the high-level project outline into concrete, actionabl
 
 ## 💻 Phase 4: Local Synthesis & Verification (The Sandbox)
 
-**Objective:** Test the entire pipeline end-to-end on a local machine before touching production infrastructure.
+**Objective:** Test the generated blocks natively in a local environment prior to touching production infrastructure.
 
 ### **4.1. JSON Route Manifest Generation**
 
 - **Need:** A single source of truth mapping every migrated URL to its structured content blueprint.
 - **Technical Implementation (How):**
   - **Tool:** A simple build script that aggregates the final JSON blueprints from all processed pages.
-  - **Detail:** For every unique URL processed, generate a companion JSON file: `[slug].json`. This file's primary payload _is_ the root component blueprint for that page.
-  - **Deliverable:** A directory structure `/manifests/[slug].json`.
+  - **Detail:** For every unique URL processed, generate a companion JSON file representing the structured content. This file's primary payload _is_ the structured data blueprint for the components on that page.
+  - **Deliverable:** A directory structure `/manifests/` containing the structured JSON configurations.
 
-### **4.2. Catch-All Routing Implementation**
+### **4.2. Component Prompt & Auto-Scaffolding Generation**
 
-- **Need:** The primary application entry point must be flexible enough to handle any route defined in the manifests.
+- **Need:** Transform the structured LLM block definitions from Phase 3 into physical React `.tsx` code without risking LLM HTML hallucination. We also need to avoid generating monolithic component blocks that exceed local LLM complexity capacities and introduce hallucinated tags.
 - **Technical Implementation (How):**
-  - **Tool:** Next.js `[...slug].js/tsx` route structure.
-  - **Detail:** The catch-all page component must read the `slug` from the URL, locate the corresponding JSON file in the manifests folder, and use that file to drive the rendering of the component structure.
-  - **Deliverable:** A functional, local Next.js route that proves the manifest loading works.
+  - **Tool:** Prompt Generator, DAG orchestration logic, & isolated `shadcn/ui` workspace library.
+  - **Detail:**
+    1.  **Component DAG (Directed Acyclic Graph):** Instead of prompting the LLM for a massive full-page component (e.g., `Footer.tsx`), the pipeline orchestrates bottom-up composition in a two-stage DAG:
+        - _Map Stage:_ The engine asks the model to output sub-primitive files required for the component layout (e.g., `SocialLink.tsx`, `NewsletterForm.tsx`).
+        - _Reduce Stage:_ Provide the interface definitions from the Map Stage back to the LLM to write the orchestrator parent `FooterLayout.tsx`.
+    2.  **Reference Grounding:** Construct strict prompts mandating the usage of pre-installed `shadcn/ui` components (e.g. `@/components/ui/button`).
+    3.  **Semantic Token Dictionary Enforcement:** Pass the exact semantic global tokens determined in Phase 2.3 directly to the LLM. Instruct it to mathematically rely on baseline Tailwind classes for spacing/typography (e.g., `p-4`, `text-lg`), and restrict colors ONLY to the semantic palette (e.g., `bg-primary`, `text-muted-foreground`, `border-border`). Prevent it from inventing arbitrary values like `bg-[#0a0a0a]`.
+  - **Testing Strategy:**
+    - Isolate the scaffolding prompt function and pass it a mocked complex `Footer` JSON blueprint.
+    - Assert that the function correctly spawns N micro-primitive generation promises rather than a single monolithic call. Validate the system prompt correctly injects the semantic `shadcn/ui` color maps and enforces baseline tailwind constraints.
+  - **Deliverable:** Highly modularized `.tsx` files utilizing strictly constrained `shadcn/ui` layout structures and native standard Tailwind primitives.
 
-### **4.3. Component Prompt & Auto-Scaffolding Generation**
+### **4.2.b. Self-Healing Syntactic Guards**
 
-- **Need:** Transform the structured LLM block definitions from Phase 3 into physical React `.tsx` code.
+- **Need:** Generation artifacts frequently suffer from truncation or hallucination at the tail end of generative loops (e.g., mismatched JSX tags like `<rabutton>`, missing closing brackets).
 - **Technical Implementation (How):**
-  - **Tool:** Prompt Generator & Ollama (LLM Wrapper).
-  - **Detail:** Construct rich Copilot prompts using standard React and semantic HTML skills alongside inferred component schemas. If configured (`autoGenerateComponents: true`), the system routes these prompts back through the LLM to directly write the physical `.tsx` files bridging Next.js to Tailwind tokens.
-  - **Deliverable:** Generated `.prompt.md` files for manual Copilot usage, or physical `.tsx` boilerplate outputted directly to `output/components/`.
+  - **Tool:** AST Parser wrapper (TypeScript Compiler API or SWC parser) intercepting code strings before disk write.
+  - **Detail:** Prior to saving the LLM output to disk, the pipeline runs the raw code string through `ts.createSourceFile()` or an equivalent swift parser.
+    - If `syntaxDiagnostics` are flagged (e.g., "Expected corresponding JSX closing tag"), the script catches the exception.
+    - It triggers a **Reflection Loop**: The LLM is sent the exact parsing error stack trace alongside its broken code block with the instruction to repair the syntax.
+    - Reflection retries are constrained by a hard limit (`max_retries: 2`) before emitting an error boundary fallback component.
+  - **Testing Strategy:**
+    - Construct a unit test (`syntactic_guard.test.ts`) that feeds the guard a string with a deliberate typo: `<h1>Hello</h1></section>`.
+    - Mock the LLM endpoint to return fixed code `<h1>Hello</h1>` only when it receives the correct error trace prompt. Assert the guard intercepts, retries, and yields the repaired string.
+  - **Deliverable:** Guarantee that any component saved to disk will compile successfully in Vite/Storybook locally without breaking the React AST tree.
 
-### **4.4. Visual QA Loop**
+### **4.3. Visual QA Loop (Storybook Pivot)**
 
-- **Need:** To visually validate that the component scaffolding actually renders correctly, especially for interactive parts.
+- **Need:** To visually validate that the component scaffolding actually renders correctly, perfectly isolated from application routing layout logic.
 - **Technical Implementation (How):**
-  - **Tool:** Standard Next.js development workflow (`npm run dev`).
-  - **Detail:** The process requires ensuring that any custom component scaffolds generated are placed into a designated, renderable directory (e.g., `/demo-frontend/src/components/`) and correctly imported/utilized by the catch-all route.
-  - **Deliverable:** Successful local build and visual confirmation of component rendering.
+  - **Tool:** Storybook (`npm run storybook`) & Tailwind CSS integration.
+  - **Detail:** The autoscaffolding prompt instructs the LLM to output the React component (`[Component].tsx`) and a valid Storybook `.stories.tsx` file using mock data. Crucially, Storybook is configured to ingest the dynamically generated `globals.css` containing the legacy design tokens so all underlying `shadcn/ui` components instantly paint with correct brand styling automatically.
+
+### **4.4. The Portable Compiler Target (Template Handoff)**
+
+- **Need:** Pre-computing a multi-tenant testbed creates code overlap where Client A components conflict with Client B. Migrations must output as fully decoupled, portable artifacts.
+- **Technical Implementation (How):**
+  - **Tool:** Recursive file copying utility within the pipeline.
+  - **Detail:** Rather than emitting components into the core monorepo (`packages/sandbox`), the pipeline shifts to a final Phase 4 state. It clones a hidden `/packages/core/templates/react-sandbox` Vite/Storybook template into the user's defined `--output-dir`. LLM components natively drop directly into this newly minted directory.
+  - **Deliverable:** A completely independent React directory representing the exact client deployment, capable of running `npm i && npm run storybook` externally without needing Fotocopy logic attached.
 
 ---
-
-## 🚀 Phase 5: Production Deployment & CMS Integration
-
-**Objective:** Move the verified, working local site to the high-availability Cloudflare edge.
-
-### **5.1. Global Layout Scaffolding (Singletons)**
-
-- **Need:** Extract shared application shells (Headers, Navigations, Footers) and generate strict wrapper components around Next.js `children`.
-- **Technical Implementation (How):**
-  - **Tool:** Global Classifier and Global Prompt Generator.
-  - **Detail:** Iterating across the purged structural layout nodes (removed by the hashing orchestrator in Phase 2.1), we pass isolated chunks into the LLM classifier specifically requesting Singleton definitions alongside reference HTML. We then generate Copilot Prompts appending the `children` prop architecture rules.
-  - **Deliverable:** Individual Markdown files describing overarching global shell layouts (e.g., `Navigation.prompt.md`), ready for Next.js Layout rendering.
-
-### **5.2. Media & Asset Migration**
-
-- **Need:** All images, SVGs, and documents must be migrated from legacy hosting to a modern, CDN-backed storage solution.
-- **Technical Implementation (How):**
-  - **Tool:** A dedicated Node Asset Manager script.
-  - **Detail:**
-    1.  Scan all content blueprints for relative asset URLs.
-    2.  Download the source asset (e.g., via direct HTTP request).
-    3.  Upload to **Cloudflare R2**.
-    4.  Crucially, update _every_ instance of the asset URL within the JSON manifests and components to the new `r2://` public URL prefix.
-  - **Deliverable:** All assets in R2, and all content references pointing to R2.
-
-### **5.3. Database Seeding (CMS/SQL)**
 
 - **Need:** To populate the authoritative content store (both CMS and relational database).
 - **Technical Implementation (How):**
   - **Tool:** Programmatic API calls within a dedicated deployment script.
   - **Detail:**
-    1.  **Payload CMS:** Use the Payload CMS SDK/API to create or update entries, mapping the structured data from the JSON blueprint to the corresponding field types defined in the CMS structure.
+    1.  **Target CMS:** Use the Target CMS SDK/API to create or update entries, mapping the structured data from the JSON blueprint to the corresponding field types defined in the CMS structure.
     2.  **D1/SQL:** Write a script that iterates through all blueprints and executes `INSERT`/`UPDATE` statements against the Cloudflare D1 database for relational or key/value data.
   - **Deliverable:** Successfully populated CMS and D1 instances, representing the site's finalized content model.
-
-### **5.4. Edge Deployment**
-
-- **Need:** Deploy the finalized Next.js application bundle and configuration files to the edge network.
-- **Technical Implementation (How):**
-  - **Tool:** `npx wrangler deploy` command, orchestrated by OpenNext tooling.
-  - **Detail:** The deployment script must package the entire stack (Next.js code + component scaffolds + manifest definitions) and execute the required wrangler command, ensuring environment variables point to the correct R2/D1 endpoints.
-  - **Deliverable:** A live, working URL on Cloudflare Pages/Workers.

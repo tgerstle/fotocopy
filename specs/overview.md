@@ -15,13 +15,12 @@
 Attempting to crawl mobile and desktop versions of a legacy site creates unresolvable data-reconciliation conflicts (e.g., hidden content on mobile, diverged DOM nodes).
 
 - **The Crawl:** The crawler enforces a strict, massive viewport (`1920x1080`). It acts as the absolute source of truth for retrieving max payload data and layout logic.
-- **The Result:** The Next.js frontend handles mobile natively. Scaffolding frameworks (like React Aria / JollyUI) and Tailwind CSS automatically re-flow the structured JSON payloads into flawless mobile web elements.
+- **The Result:** The React frontend handles mobile natively. Scaffolding frameworks (like shadcn/ui) and Tailwind CSS automatically re-flow the structured JSON payloads into flawless mobile web elements.
 
 ### 2. URL Integrity & SEO Preservation
 
 Losing SEO equity during a migration is catastrophic. Information architecture is preserved at two levels:
 
-- **1:1 Path Duplication:** The crawler records the exact `window.location.pathname` during extraction. The resulting sandbox JSON output (`data/final_manifests/about/team.json`) is digested by a Next.js **Catch-All route** (`[[...slug]].tsx`), generating an identical live URL (`/about/team`).
 - **301 Redirect Mapping:** If URLs _must_ change, a `redirects.csv` ledger is compiled recursively alongside the crawl and passed to the Cloudflare Pages deploy configuration `_redirects` file automatically.
 
 ### 3. Absolute Asset Mirroring (Local-First Sync)
@@ -29,8 +28,8 @@ Losing SEO equity during a migration is catastrophic. Information architecture i
 The engine does not link out to legacy domains for images or stylesheets, nor does it rely on cloud services to preview the migrated site locally.
 
 - **Extraction:** The DOM parser traps `src` attributes, `<picture>` wrappers, and CSS `background-images`.
-- **Local Caching:** A Node asset manager downloads these files directly into the Next.js `public/migrated-media/` directory. The JSON blueprints use these local `/migrated-media/...` paths so the entire migrated site runs perfectly on `localhost` without wifi.
-- **Production Sync:** During Phase 5, the locally vetted `migrated-media` directory is bulk-synced to **Cloudflare R2**, and the CMS seeder updates the paths from local URLs to the live CDN URLs.
+- **Local Caching:** A Node asset manager downloads these files directly into the React `public/migrated-media/` directory. The JSON blueprints use these local `/migrated-media/...` paths so the entire migrated site runs perfectly on `localhost` without wifi.
+- **Production Sync:** During Phase 7, the locally vetted `migrated-media` directory is bulk-synced to **Cloudflare R2**, and the CMS seeder updates the paths from local URLs to the live CDN URLs.
 
 ---
 
@@ -39,13 +38,13 @@ The engine does not link out to legacy domains for images or stylesheets, nor do
 ### Phase 0: Tracer Bullet (Demo Pipeline)
 
 **Goal:** Prove the data structure works _first_.
-We build the final output—a Next.js site powered by mock JSON—_before_ writing any extraction logic. This live sandbox acts as a testbed for schema changes during development before backend code is written.
+We build the final output—a React site powered by mock JSON—_before_ writing any extraction logic. This live sandbox acts as a testbed for schema changes during development before backend code is written.
 
 ### Phase 1: Orchestration Foundation & Discovery (Completed)
 
 The initial stage establishes a Node.js orchestration layer designed to crawl and snapshot existing digital properties accurately. The crawler heavily leverages **Contract-Driven Testing**, benchmarking its raw layout extraction and HTML dumping against our strictly typed Zod schemas. The benchmark site for pipeline development is `css-snacks.com`.
 
-- **Global Configuration & Hooks (`fotocopy.config.ts`):** The orchestration engine is built to be strictly site-agnostic. All site-specific logic (e.g., LLM host endpoints, page categorization regex routing, and pre/post payload hooks) is defined in a standard user configuration file injected into the pipeline at runtime.
+- **Configurable Crawl Scale:** The orchestration engine is built to be strictly scale-agnostic. Whether invoked against a single `--target-url` for a quick component extraction, or running via a Spider against a 10,000 URL sitemap, the underlying execution loop (SQLite state tracking, file I/O, LLM prompts) operates identically. This guarantees single-page tests act as perfect QA validations for full site deployments.
 - **Adaptive Crawler Repurposing:** We utilize our existing **Adaptive Web Auditor (site-scanner)**. Its robust **Scenario System** is heavily relied upon to navigate logic-gate blockers like modals, cookie banners, and interstitials that reliably derail standard scrapers.
 - **Visual Box Model Capture:** Playwright is configured not merely as a text-scraper but as a layout engine context. It captures spatial logic via `getBoundingClientRect()` and `getComputedStyle()`, retaining actual component geometry. (Added computed positions, widths, and background colors to facilitate offline math).
 
@@ -72,20 +71,10 @@ This phase serves as the data transformation engine. Local LLMs handle the token
 
 With the raw data perfectly structured into JSON and Design Tokens extracted, advanced frontier models (e.g., via GitHub Copilot) are unleashed to generate the actual codebase. Pages are not hardcoded; they are dynamically assembled using a "Block Factory" routing pattern.
 
-- **Auto-Generated Copilot Prompts:** The Node orchestrator scans the JSON metadata and generates strict `.prompt.md` files for each component type (e.g., `HeroBlock.prompt.md`). Copilot reads these specific prompts inside VS Code to generate mathematically perfect React/Tailwind components exactly matched to the data.
+- **Auto-Generated Copilot Prompts:** The Node orchestrator scans the JSON metadata and generates strict `.prompt.md` files for each component type (e.g., `HeroBlock.prompt.md`). These prompts mandate the use of `shadcn/ui` structural primitives rather than hallucinated HTML tags to guarantee accessibility and layout consistency. Copilot reads these prompts to orchestrate exact data-to-Tailwind mappings for the UI.
 - **JSON Route Manifests:** The compiler generates a physical JSON artifact for every single route (e.g., `/data/manifests/about-us.json`). This file contains a linear array of Component Blocks.
-- **The Catch-All Block Factory:** A dynamic **Next.js catch-all route** (`app/[...slug]/page.tsx`) acts as the page builder. It matches the URL slug, reads the corresponding JSON manifest, loops over the array, and dynamically renders the Copilot-generated UI components (e.g., `<HeroBlock {...props} />`).
+- **Isolated Storybook Compiler Extraction:** UI components generated by the pipeline are output directly as independent `.tsx` and `.stories.tsx` files. Storybook is strictly integrated with the global Tailwind configuration (`globals.css`) injected with the crawled W3C tokens. During migration compilation, a portable runtime template (`template/react-sandbox`) is copied into the user's isolated `output` directory, cleanly mapping the site's design system into a portable deliverable folder that functions independently of the engine.
 - **Local Asset Harvesting:** A Node.js manager downloads all legacy media directly to `/public/migrated-media/`. The JSON files use these local paths, completely decoupling the sandbox from the web. Visual QA is executed offline via `npm run dev`.
-
-### Phase 5: Production Deployment & CMS Integration
-
-Because Next.js was built to consume an array of JSON objects, the handoff to the CMS is a perfectly frictionless 1:1 translation.
-
-- **Payload CMS "Blocks" & "Collections" Mapping:** Payload CMS natively supports a schema type called a **"Blocks Field"** for ad-hoc pages (Home, About). For identified templates (from Phase 2), we map data directly to rigid **Collections** (e.g., `Posts`, `Products`) using defined fields (Title, Content, Featured Image).
-- **Headless Database Seeding:** A Node script iterates through `/data/manifests/*.json` and `POST`s the arrays directly to the Payload CMS Local/REST API. The data perfectly aligns with Payload's Block Fields or Collection schemas based on the inferred Page Type.
-- **Data Source Toggle:** We swap an environment variable in Next.js (e.g., `DATA_SOURCE=payload`). The _exact same_ Catch-All Route from Phase 4 now fetches the JSON arrays from Payload CMS instead of the local filesystem. No frontend code is altered.
-- **R2 CDN Sync:** The locally cached media is pushed to Cloudflare R2 object storage, and the CMS seeding scripts update the database string paths dynamically.
-- **Zero-Server Edge Deployment:** The entire ecosystem is deployed to Cloudflare Workers via **OpenNext** (`npx wrangler deploy`).
 
 ---
 
@@ -96,4 +85,16 @@ The strategic usage of the Cloudflare stack radically modifies standard agency o
 - Because **Cloudflare D1** (database) and **R2** (object storage) provide vast free-tier execution and storage limits, we can aggregate **15–20 distinct client site projects** strictly under a singular **$5/month Cloudflare Workers subscription**.
 - This lack of recurring fractional AWS/Vercel fees creates staggering profit margins for long-term retainer migration & hosting contracts, offering both deep resilience and unparalleled multi-tenant edge capabilities.
 
-**Workspace Architecture:** The project uses NPM Workspaces to manage individual domains (demo-frontend, demo-pipeline) to streamline lockfiles and dependency execution.
+**Workspace Architecture:** The project separates concerns cleanly. The `packages/core` engine contains all ML and scraping logic. It stamps out detached, independent React environments utilizing template rendering at the end of the migration lifecycle.
+
+## Project Architecture: The Compiler Pipeline
+
+The system is organized into a clean **Compiler Pipeline**. Rather than heavily modifying its own internal components library, the Fotocopy core generates self-contained deliverables decoupled from the engine.
+
+### `packages/core` (The Backend Pipeline)
+
+The core engine (`@fotocopy/core`) contains all CLI operations, crawling, tracing, ML consolidation logic, database state management, and template scaffolds. No specific framework libraries (e.g. Next.js or Payload) belong here organically as runnable servers. It evaluates targets and places all synthesized models and configs into user-defined localized directories (e.g., `output/css-snacks.com/`). The runner script defaults to generating independent React projects matching the legacy domain footprint, initializing a localized SQLite db (`.fotocopy/migration_state.db`) securely tucked away per project target.
+
+### `packages/core/templates/react-sandbox` (The Compiler Target)
+
+Instead of sharing an internal preview workspace (which suffers from multi-tenant data pollution), the final phase of the pipeline recursively copies this pure Vite/React/Storybook template directly into the output directory (e.g. `output/css-snacks.com`). The dynamically generated `shadcn/ui` `.tsx` components and `.stories.tsx` files are subsequently hydrated directly into this standalone project. This allows developers to type `cd output/css-snacks.com && npm install && npm run storybook` to review identical migrated visual layouts completely decoupled from the Fotocopy crawler environment.

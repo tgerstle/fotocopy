@@ -1,6 +1,6 @@
 # Phase 2, Step 3: Collection & Template Inference
 
-A CMS like Payload should not consist of 10,000 "Ad-Hoc" pages. It needs structured data. A Blog Post should have a rigorous `title` and `author` field, distinct from a standard marketing page.
+A CMS like a CMS should not consist of 10,000 "Ad-Hoc" pages. It needs structured data. A Blog Post should have a rigorous `title` and `author` field, distinct from a standard marketing page.
 
 This engine automatically clusters legacy pages into CMS Collections.
 
@@ -21,7 +21,7 @@ After the Global Intersection (`p2_02`) strips the Header and Footer, the engine
 
 ## 3. The Output Definition
 
-Instead of sending these to the generic block pipeline, the system outputs mapping instructions. We update the configuration to route these specific URLs (via Regex) to a `Posts` Collection in Payload, utilizing a strictly defined `PostTemplate` rather than a generic array of blocks.
+Instead of sending these to the generic block pipeline, the system outputs mapping instructions. We update the configuration to route these specific URLs (via Regex) to a `Posts` Collection in a CMS, utilizing a strictly defined `PostTemplate` rather than a generic array of blocks.
 
 ## Implementation Status
 

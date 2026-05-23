@@ -1,0 +1,14 @@
+{
+  "page_id": "home",
+  "blocks": [
+    {
+      "inferredBlockType": "Hero",
+      "confidence": 0.9,
+      "mappings": {
+        "titleNodeId": "101",
+        "subtitleNodeId": "102",
+        "ctaNodeId": "104"
+      }
+    }
+  ]
+}

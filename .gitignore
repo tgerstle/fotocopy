@@ -1,6 +1,7 @@
 node_modules
 
 # Generated Pipeline Output Artifacts
-demo-pipeline/output/
-demo-frontend/data/mock-api/index.json
+output/
+packages/core/output/
+packages/sandbox/data/mock-api/index.json
 

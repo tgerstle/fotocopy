@@ -1,0 +1,17 @@
+{
+  "d19d19a1527ff3b76cc6e8a98014830e35b45cab5c53018556df44ac40d157c9": {
+    "inferredBlockType": "Navigation"
+  },
+  "80ac05650e848e1cd040556127a92009a1c86ea45ab943a2311373d3bb2d0383": {
+    "inferredBlockType": "Navigation"
+  },
+  "5cc77f083c2f0229cd16a0d0efa5dc3b5f622849f70dc1cad3fe55cc2b16291a": {
+    "inferredBlockType": "Navigation', 'mappings': {'title': '100%', 'description': 'N/A', 'cta_button': 'N/A', 'swatch_color': 'N/A', 'avatar': 'N/A', 'background_image': 'N/A', 'icon': 'N/A', 'image': 'N/A', 'text': 'N/A'}}"
+  },
+  "3e738d6b8c428429cd40675011586d58aaab00f56053c2ffc1cfea9f1fa3f627": {
+    "inferredBlockType": "RichText/Hero/CardGrid/Footer/Navigation/Testimonial/etc (Placeholder - Input is incomplete/empty/truncated/invalid/missing content for a specific task/logic/schema/mapping/etc.)"
+  },
+  "4bd081edb471b0eaf549d016cb847b0b6f6f07c5053b7675042970fac80cc1a4": {
+    "inferredBlockType": "Footer"
+  }
+}

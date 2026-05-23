@@ -6,14 +6,14 @@ This spec proves the linchpin of our architecture: combining the LLM pointers wi
 
 **Goal:** Read LLM outputs, query the raw DOM, and generate the final payload-ready JSON.
 
-**Implementation (`/demo-pipeline/scripts/hydrator.js`):**
+**Implementation (`/packages/core/scripts/hydrator.js`):**
 
 1. Read `mock_llm/02_llm_output.json`.
 2. Read and parse `mock_capture/01_raw_dom.html` (using `cheerio` or `jsdom`).
 3. For every block in the LLM output, look at the `mappings`.
 4. If `mappings.titleNodeId === "102"`, the script queries `[data-awa-id="102"]`.
 5. It extracts `.text()` (or `.attr('src')` for images).
-6. It writes the combined data to `/demo-pipeline/output/03_cms_ready.json`.
+6. It writes the combined data to `/packages/core/output/03_cms_ready.json`.
 
 ### Expected Output (`03_cms_ready.json`)
 
@@ -39,9 +39,9 @@ This spec proves the linchpin of our architecture: combining the LLM pointers wi
 }
 ```
 
-### Zod Schema (`/demo-pipeline/schemas/cms.ts`)
+### Zod Schema (`/packages/core/schemas/cms.ts`)
 
-To ensure the hydrator guarantees output perfectly matching the future Next.js/Payload types, we define the final interface. By keeping this schema central, we can export `CMSPageData` directly to the `BlockRenderer` React component later.
+To ensure the hydrator guarantees output perfectly matching the future CMS types, we define the final interface. By keeping this schema central, we can export `CMSPageData` directly to the `BlockRenderer` React component later.
 
 ```typescript
 import { z } from "zod";

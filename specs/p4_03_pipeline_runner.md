@@ -1,6 +1,8 @@
-# Phase 4, Step 3: Global Pipeline Orchestrator (CLI Runner)
+# Phase 4, Step 3: Global Pipeline Orchestrator (CLI Runner - DEPRECATED)
 
-**Goal:** Create a single, unified Node.js executable (\`scripts/runner.ts\`) that acts as the master conductor for the entire backend data extraction and structure engine. It must seamlessly string together Phases 1 through 4 over a list of discovered URLs.
+> **NOTE: This document reflects an older architecture.** The pipeline orchestrator was heavily refactored in Phase 5 to use SQLite state queues, generic batch processors, and a Contextual Package Execution model. Please refer to `Phase 5: Site-Wide Orchestration & State Management` for the modern CLI specifications.
+
+**Goal:** Create a single, unified Node.js executable... (\`scripts/runner.ts\`) that acts as the master conductor for the entire backend data extraction and structure engine. It must seamlessly string together Phases 1 through 4 over a list of discovered URLs.
 
 ## 1. Execution Flow
 
