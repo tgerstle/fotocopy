@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { generateMapReduceStrategy } from "../../src/scaffolding/prompt_generator";
+import { generateMapReduceStrategy } from "../src/scaffolding/prompt_generator";
 
 describe("Stage 3: DAG Orchestrator Validator", () => {
   it("breaks down a complex component into micro-primitive Map statements", async () => {

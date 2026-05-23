@@ -2,17 +2,17 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as path from "path";
-import { generateMapReduceStrategy } from "../../src/scaffolding/prompt_generator";
-import { extractTokens } from "../../src/crawler/token_extractor";
+import { generateMapReduceStrategy } from "../src/scaffolding/prompt_generator";
+import { extractTokens } from "@fotocopy/engine/src/crawler/token_extractor";
 
 describe("Stage 3: DAG Orchestrator Validator (Live Blueprint)", () => {
   const liveTokensPath = path.resolve(
     __dirname,
-    "../../mock_capture/01_design_tokens.json",
+    "../../../mock_capture/01_design_tokens.json",
   );
   const liveComponentDbPath = path.resolve(
     __dirname,
-    "../../fotocopy.components.json",
+    "../../../output/mock_fotocopy.components.json",
   );
 
   it("orchestrates a real blueprint chunk from the DB", async () => {

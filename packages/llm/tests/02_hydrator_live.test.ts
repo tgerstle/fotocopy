@@ -1,15 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { hydrate } from "../../src/hydrator";
+import { hydrate } from "../src/scaffolding/hydrator";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 
 describe("Stage 2: Lexical Hydrator Validator (Live Extracted Data)", () => {
-  const domPath = path.resolve(__dirname, "../../mock_capture/01_raw_dom.html");
-  const llmPath = path.resolve(__dirname, "../../mock_llm/02_llm_output.json");
+  const domPath = path.resolve(
+    __dirname,
+    "../../../mock_capture/01_raw_dom.html",
+  );
+  const llmPath = path.resolve(
+    __dirname,
+    "../../../mock_llm/02_llm_output.json",
+  );
   const tokensPath = path.resolve(
     __dirname,
-    "../../mock_capture/01_design_tokens.json",
+    "../../../mock_capture/01_design_tokens.json",
   );
   const outputPath = path.resolve(
     __dirname,
@@ -37,6 +43,7 @@ describe("Stage 2: Lexical Hydrator Validator (Live Extracted Data)", () => {
     expect(firstBlock.data.designTokens.color).toBeDefined();
 
     // We optionally write it to ensure pipeline functionality hasn't degraded
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, JSON.stringify(result, null, 2));
     expect(fsSync.existsSync(outputPath)).toBe(true);
   });

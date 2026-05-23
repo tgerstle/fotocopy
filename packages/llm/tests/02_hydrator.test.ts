@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { hydrate } from "../../src/hydrator";
+import { hydrate } from "../src/scaffolding/hydrator";
 import * as path from "path";
 import * as fs from "fs/promises";
 

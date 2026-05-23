@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { parseAndHeal } from "../../src/scaffolding/ast_guard";
+import { parseAndHeal } from "../src/scaffolding/ast_guard";
 
 describe("Stage 4: AST Self-Healing Guard Validator", () => {
   it("detects syntax errors in generated component code and invokes reflection loop", async () => {

@@ -86,15 +86,12 @@ ${tokensString}
     await fs.writeFile(outPath, promptContent);
     generatedFiles.push(outPath);
 
-    if (getConfig().llm.autoGenerateComponents) {
+    if (getConfig().llm?.autoGenerateComponents) {
       console.log(
         `Autoscaffolding global layout component: ${type}.tsx via LLM...`,
       );
       try {
-        const generation = await generateCode(
-          promptContent,
-          getConfig().llm,
-        );
+        const generation = await generateCode(promptContent, getConfig().llm);
 
         if (generation.component) {
           const healedComponent = await parseAndHeal(

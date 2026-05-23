@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { TeardownManager } from "@fotocopy/engine";
 
 export interface OllamaOptions {
   model?: string;
@@ -55,6 +56,8 @@ DOM Nodes:
 ${chunkHtml}
 `;
 
+    const controller = new AbortController();
+    TeardownManager.registerAbortController(controller);
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -71,7 +74,7 @@ ${chunkHtml}
           num_predict: 512, // Reduced to prevent infinite loops
         },
       }),
-      signal: AbortSignal.timeout(120000), // Reduced down to 2 mins for classification
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(120000)]), // Added abort controller for teardown
     });
 
     if (!response.ok) {
@@ -84,15 +87,20 @@ ${chunkHtml}
 
     try {
       const parsedPayload = JSON.parse(data.response);
-      
+
       // Clean up hallucinated string repetition (e.g. "123_content_content")
       if (parsedPayload.mappings) {
         for (const key of Object.keys(parsedPayload.mappings)) {
           if (typeof parsedPayload.mappings[key] === "string") {
-             // Only keep digits and commas
-             parsedPayload.mappings[key] = parsedPayload.mappings[key].replace(/[^\d,]/g, '').trim();
-             // Remove trailing or leading commas
-             parsedPayload.mappings[key] = parsedPayload.mappings[key].replace(/^,+|,+$/g, '');
+            // Only keep digits and commas
+            parsedPayload.mappings[key] = parsedPayload.mappings[key]
+              .replace(/[^\d,]/g, "")
+              .trim();
+            // Remove trailing or leading commas
+            parsedPayload.mappings[key] = parsedPayload.mappings[key].replace(
+              /^,+|,+$/g,
+              "",
+            );
           }
         }
       }
@@ -105,9 +113,13 @@ ${chunkHtml}
 
       if (attempt === maxAttempts) {
         if (error instanceof SyntaxError) {
-          throw new Error(`Failed to parse LLM JSON response after ${maxAttempts} attempts. Last output: ${data.response}`);
+          throw new Error(
+            `Failed to parse LLM JSON response after ${maxAttempts} attempts. Last output: ${data.response}`,
+          );
         }
-        throw new Error(`Classification failed after ${maxAttempts} attempts: ${error.message}`);
+        throw new Error(
+          `Classification failed after ${maxAttempts} attempts: ${error.message}`,
+        );
       }
     }
   }
@@ -120,16 +132,18 @@ export async function generateCode(
   options: OllamaOptions = {},
 ): Promise<{ component: string; story?: string }> {
   // Use gemma4:e4b which we know is locally installed instead of our hallucinated model
-  const model = options.model || "gemma4:e4b"; 
+  const model = options.model || "gemma4:e4b";
   const endpoint = options.endpoint || "http://localhost:11434/api/generate";
   const temperature = options.temperature ?? 0.1;
 
   let attempt = 0;
   const maxAttempts = 2; // Retry loop
 
-  while(attempt < maxAttempts) {
+  while (attempt < maxAttempts) {
     attempt++;
     try {
+      const controller = new AbortController();
+      TeardownManager.registerAbortController(controller);
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -143,7 +157,10 @@ export async function generateCode(
             temperature,
           },
         }),
-        signal: AbortSignal.timeout(600000), // Absolute max time 10m
+        signal: AbortSignal.any([
+          controller.signal,
+          AbortSignal.timeout(600000),
+        ]), // Absolute max time 10m
       });
 
       if (!response.ok) {
@@ -158,21 +175,21 @@ export async function generateCode(
 
       const decoder = new TextDecoder();
       let fullResponse = "";
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(l => l.trim() !== '');
-        
+        const lines = chunk.split("\n").filter((l) => l.trim() !== "");
+
         for (const line of lines) {
           try {
             const parsed = JSON.parse(line);
             if (parsed.response) {
               fullResponse += parsed.response;
             }
-          } catch(e) {
+          } catch (e) {
             // Ignore partial JSON lines
           }
         }
@@ -197,10 +214,11 @@ export async function generateCode(
         component: blocks[0],
         story: blocks.length > 1 ? blocks[1] : undefined,
       };
-
     } catch (error: any) {
-      console.log(`[Hydrator Guard] Attempt ${attempt} failed: ${error.message}`);
-      if(attempt === maxAttempts) {
+      console.log(
+        `[Hydrator Guard] Attempt ${attempt} failed: ${error.message}`,
+      );
+      if (attempt === maxAttempts) {
         throw error;
       }
     }

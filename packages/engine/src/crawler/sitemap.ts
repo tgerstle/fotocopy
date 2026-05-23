@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as cheerio from "cheerio";
 
-import { getConfig } from "@fotocopy/engine";
+import { getConfig } from "../config";
 
 export async function fetchSitemapUrls(sitemapUrl: string): Promise<string[]> {
   console.log(`Fetching sitemap: ${sitemapUrl}`);
@@ -35,7 +35,7 @@ export async function fetchSitemapUrls(sitemapUrl: string): Promise<string[]> {
 
 if (require.main === module) {
   (async () => {
-    const sitemapUrl = fotocopyConfig.sitemapUrl;
+    const sitemapUrl = getConfig().sitemapUrl;
     if (!sitemapUrl) {
       console.error("No sitemapUrl defined in fotocopy.config.ts");
       process.exit(1);
@@ -44,7 +44,7 @@ if (require.main === module) {
       const urls = await fetchSitemapUrls(sitemapUrl);
       console.log(`\nTotal URLs discovered: ${urls.length}`);
 
-      const csvPath = fotocopyConfig.intakeCsvPath;
+      const csvPath = getConfig().intakeCsvPath;
       console.log(`Saved URLs to ${csvPath}`);
     } catch (e) {
       console.error("Failed to parse sitemap:", e);

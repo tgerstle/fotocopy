@@ -4,7 +4,7 @@ This document translates the high-level project outline into concrete, actionabl
 
 ---
 
-## 🛠️ Phase 1: Orchestration Foundation & Discovery
+## 🛠️ Phase 1: Orchestration Foundation & Discovery (Completed)
 
 **Objective:** Establish the initial data pipeline, moving from an unconstrained crawl to structured, component-aware data capture.
 
@@ -122,7 +122,7 @@ This document translates the high-level project outline into concrete, actionabl
 
 ---
 
-## 💻 Phase 4: Local Synthesis & Verification (The Sandbox)
+## 💻 Phase 4: Local Synthesis & Verification (Completed)
 
 **Objective:** Test the generated blocks natively in a local environment prior to touching production infrastructure.
 
@@ -181,10 +181,22 @@ This document translates the high-level project outline into concrete, actionabl
 
 ---
 
-- **Need:** To populate the authoritative content store (both CMS and relational database).
+## 🚀 Phase 5: Site-Wide Orchestration & State Management (Completed)
+
+- **Need:** Scale the pipeline from a single URL to thousands safely without OOM errors, and support restartable queues if failure occurs.
 - **Technical Implementation (How):**
-  - **Tool:** Programmatic API calls within a dedicated deployment script.
-  - **Detail:**
-    1.  **Target CMS:** Use the Target CMS SDK/API to create or update entries, mapping the structured data from the JSON blueprint to the corresponding field types defined in the CMS structure.
-    2.  **D1/SQL:** Write a script that iterates through all blueprints and executes `INSERT`/`UPDATE` statements against the Cloudflare D1 database for relational or key/value data.
-  - **Deliverable:** Successfully populated CMS and D1 instances, representing the site's finalized content model.
+  - **Tool:** Local SQLite Database (`better-sqlite3`) inside the user's output directory.
+  - **Detail:** Implement a Dry-Run Spider to rapidly fetch structural headers and map taxonomy before heavy LLM logic kicks in. The DB tracks records through states (`DISCOVERED`, `CRAWLED`, `HASHED`, etc.) using atomic batched updates and concurrent queue consumption to manage process backpressure.
+  - **Deliverable:** Fully resilient `pipeline_runner.ts` orchestrator capable of pausing, resuming, and healing hanging background execution slots safely.
+
+## 🚀 Phase 6: Structural Clustering & At-Scale Extraction (Pending)
+
+- **Need:** Process massive identical site templates without wasting GPU/LLM classification cycles on repeatedly scanning the exact same DOM tree structure.
+- **Technical Implementation (How):**
+  - **Tool:** `Cheerio` bulk extraction mapped against Phase 2 Geometric Hashes.
+  - **Detail:** The orchestrator groups identical `structural_hash` results. It submits ONE "Representative URL" per cluster to the LLM to architect the component schema. It then bulk-processes the remaining URLs in that cluster using classical DOM parsing mapped to the LLM's architecture schema.
+
+## 🚀 Phase 7: CMS & Production Sync (Pending)
+
+- **Need:** Push the offline, locally validated migration safely into the authoritative production environment.
+- **Technical Implementation (How):** Provide deployment scripts to push local media to Cloudflare R2 and execute programmatic API calls/SQL logic mapping the JSON blueprints into target Content Management Systems or relational databases.

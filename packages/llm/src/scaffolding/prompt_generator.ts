@@ -127,13 +127,10 @@ ${tokensString}
     generatedFiles.push(outPath);
 
     // Provide the component back to the LLM if config is opted in
-    if (getConfig().llm.autoGenerateComponents) {
+    if (getConfig().llm?.autoGenerateComponents) {
       console.log(`Autoscaffolding component: ${componentName}.tsx via LLM...`);
       try {
-        const generation = await generateCode(
-          promptContent,
-          getConfig().llm,
-        );
+        const generation = await generateCode(promptContent, getConfig().llm);
 
         if (generation.component) {
           // AST reflection guard

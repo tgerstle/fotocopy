@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as path from "path";
-import { extractSandboxTemplate } from "../../src/scaffolding/sandbox_extractor";
+import { extractSandboxTemplate } from "../src/scaffolding/sandbox_extractor";
 
 describe("Stage 5: Template Sandbox Validator (Live Repository State)", () => {
   const liveSrc = path.resolve(__dirname, "../../templates/react-sandbox");

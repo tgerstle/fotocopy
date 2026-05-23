@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { crawlAndCapture } from "../../src/crawler/capture";
-import { DesignTokensSchema } from "../../schemas/tokens";
+import { DesignTokensSchema } from "../../../../packages/llm/src/schemas/tokens";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as cheerio from "cheerio";
-import { fotocopyConfig } from "@fotocopy/engine";
+import { getConfig, setConfig } from "../../src/config";
 
 // These are end-to-end tests relying on a real network request.
 // We set a high timeout because Playwright has to boot Chromium and load the target site.
 describe("Phase 1: Live Crawler Engine (Contract-Driven Testing)", () => {
   const outputDir = path.resolve(__dirname, "../../output/live_capture");
-  const targetUrl = fotocopyConfig.testTargetUrl;
+  setConfig({ testTargetUrl: "https://css-snacks.com/" });
+  const targetUrl = getConfig().testTargetUrl;
 
   // We run the crawler once before all tests so we don't hammer the site multiple times.
   let capturedHtml: string;

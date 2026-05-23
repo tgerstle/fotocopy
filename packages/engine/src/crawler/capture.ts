@@ -1,4 +1,5 @@
-import { chromium, Page } from "playwright";
+import { chromium, type Browser, type Page } from "playwright";
+import { TeardownManager } from "../teardown";
 import * as fs from "fs/promises";
 import * as path from "path";
 
@@ -32,6 +33,9 @@ async function handleScenarios(page: Page) {
 
 export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
   const browser = await chromium.launch({ headless: true });
+  TeardownManager.registerTask(async () => {
+    await browser.close();
+  });
   const context = await browser.newContext({
     viewport: { width: 1920, height: 1080 }, // Strict desktop viewport
   });

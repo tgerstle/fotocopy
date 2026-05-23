@@ -2,7 +2,7 @@ import { PipelineError } from "@fotocopy/engine";
 import { program } from "commander";
 import path from "path";
 import fs from "fs";
-import { runDiscovery } from "@fotocopy/engine";
+import { runDiscovery, setConfig } from "@fotocopy/engine";
 import { crawlAndCapture } from "@fotocopy/engine";
 import { computeGlobalIntersections } from "@fotocopy/engine";
 import { purgeAndSlicePage } from "@fotocopy/engine";
@@ -19,8 +19,8 @@ import {
   updateStatus,
   handleFailure,
   resetHangingJobs,
-} from "./state_db";
-import { PipelinePhase, UrlRecord } from "./types/state";
+} from "@fotocopy/engine";
+import { PipelinePhase, UrlRecord } from "@fotocopy/engine";
 
 import { extractSandboxTemplate } from "@fotocopy/llm";
 import { injectTokensToCSS } from "@fotocopy/llm";
@@ -140,8 +140,6 @@ const buildRunHydrationPhase =
 
 type PhaseFunction = (record: UrlRecord) => Promise<void>;
 
-
-
 /**
  * Generic Batch Processor
  * Claims records of a specific status and runs the phase worker.
@@ -168,7 +166,7 @@ async function processBatch(
     console.log(`> Picked up ${batch.length} items for ${phase}`);
 
     // Process concurrently but safely limited by the batch size
-    const promises = batch.map(async (record) => {
+    const promises = batch.map(async (record: any) => {
       try {
         await workerFn(record);
         // On success, advance to the next phase
@@ -266,6 +264,7 @@ async function main() {
   if (fs.existsSync(configPath)) {
     const imported = await import(configPath);
     fotocopyConfig = imported.fotocopyConfig || imported.default || {};
+    setConfig(fotocopyConfig);
     console.log(`Loaded configuration from ${configPath}`);
   } else if (options.config) {
     console.warn(`Config file specified but not found at ${configPath}`);
@@ -465,9 +464,11 @@ async function main() {
       );
     });
   } else {
-    console.log('\n--- 🎉 NO ERRORS TRIGGERED ---');
+    console.log("\n--- 🎉 NO ERRORS TRIGGERED ---");
     if (options.targetUrl) {
-      console.log(`\nTo view your generated components in Storybook, run:\n   pnpm run preview ${new URL(options.targetUrl).hostname.replace(/^www\./, '')}\n`);
+      console.log(
+        `\nTo view your generated components in Storybook, run:\n   pnpm run preview ${new URL(options.targetUrl).hostname.replace(/^www\./, "")}\n`,
+      );
     }
   }
 }

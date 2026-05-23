@@ -1,8 +1,8 @@
 import * as fs from "fs/promises";
 import * as cheerio from "cheerio";
-import { LLMPageSchema } from "@fotocopy/llm/src/schemas/llm";
-import { DesignTokensSchema } from "@fotocopy/llm/src/schemas/tokens";
-import { CMSPageSchema, CMSPageData } from "@fotocopy/llm/src/schemas/cms";
+import { LLMPageSchema } from "../schemas/llm";
+import { DesignTokensSchema } from "../schemas/tokens";
+import { CMSPageSchema, CMSPageData } from "../schemas/cms";
 
 export async function hydrate(
   domPath: string,
@@ -37,19 +37,25 @@ export async function hydrate(
         resolvedData[fieldName] = {
           src: el.attr("src") || "",
           alt: el.attr("alt") || "",
-          title: el.attr("title") || ""
+          title: el.attr("title") || "",
         };
-      } else if (el.is("a") && (el.attr("href") || "").match(/\.(pdf|mp4|webm|png|jpg|jpeg|gif|svg)$/i)) {
+      } else if (
+        el.is("a") &&
+        (el.attr("href") || "").match(/\.(pdf|mp4|webm|png|jpg|jpeg|gif|svg)$/i)
+      ) {
         resolvedData[fieldName] = {
           src: el.attr("href") || "",
-          alt: el.text().trim() || el.attr("title") || el.attr("aria-label") || ""
+          alt:
+            el.text().trim() || el.attr("title") || el.attr("aria-label") || "",
         };
       } else if ((el.attr("style") || "").includes("background-image")) {
         const style = el.attr("style");
-        const bgMatch = style ? style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i) : null;
+        const bgMatch = style
+          ? style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i)
+          : null;
         resolvedData[fieldName] = {
           src: bgMatch ? bgMatch[1] : "",
-          alt: el.attr("aria-label") || el.text().trim() || ""
+          alt: el.attr("aria-label") || el.text().trim() || "",
         };
       } else {
         resolvedData[fieldName] = el.text().trim();

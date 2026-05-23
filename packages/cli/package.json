@@ -6,7 +6,9 @@
   "dependencies": {
     "@fotocopy/engine": "workspace:*",
     "@fotocopy/llm": "workspace:*",
-    "commander": "^14.0.3"
+    "commander": "^14.0.3",
+    "zod": "^3.25.76",
+    "cheerio": "^1.2.0"
   },
   "scripts": {
     "test": "vitest run"

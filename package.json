@@ -6,7 +6,9 @@
   "scripts": {
     "preview": "./scripts/preview.sh",
     "prepare": "husky",
-    "test": "pnpm -r run test"
+    "test": "pnpm -r run test",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r exec tsc --noEmit"
   },
   "lint-staged": {
     "*.ts": [

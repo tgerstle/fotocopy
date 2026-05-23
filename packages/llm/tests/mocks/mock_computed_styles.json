@@ -1,0 +1,19 @@
+{
+  "colors": {
+    "background": "rgb(20, 20, 20)",
+    "primary": "#ff0000",
+    "muted": "rgba(240, 240, 240, 0.5)",
+    "card": "#1a1a1a"
+  },
+  "geometry": {
+    "buttonPadding": "17px",
+    "containerGap": "23px",
+    "sectionMargin": "61px",
+    "radius": "8px"
+  },
+
+  "typography": {
+    "sans": "Inter, sans-serif",
+    "heading": "Cal Sans, sans-serif"
+  }
+}

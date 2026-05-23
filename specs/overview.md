@@ -67,7 +67,7 @@ This phase serves as the data transformation engine. Local LLMs handle the token
 - **Pipeline Observability & CLI Diagnostics:** The orchestrator allows isolating specific phases utilizing runtime arguments (e.g., `--step=2 --verbose`). This yields powerful debugging by forcefully pausing migrations so you can visually verify bounded layouts or DOM geometries without being forced through the full extraction pipeline continuously.
 - **Component Consolidation & Concurrency Scaling:** The offline generation loop employs `p-limit` caps safely saturating native GPU RAM blocks. A final bridging phase inside `consolidator.ts` scans all structural objects spanning the outputs, discovering unique layouts mathematically to build a single `fotocopy.components.json` manifest dictionary limiting Phase 4 payload sizes securely.
 
-### Phase 4: Component Scaffolding & Local Verification (Advanced LLMs)
+### Phase 4: Component Scaffolding & Local Verification (Completed)
 
 With the raw data perfectly structured into JSON and Design Tokens extracted, advanced frontier models (e.g., via GitHub Copilot) are unleashed to generate the actual codebase. Pages are not hardcoded; they are dynamically assembled using a "Block Factory" routing pattern.
 
@@ -77,6 +77,16 @@ With the raw data perfectly structured into JSON and Design Tokens extracted, ad
 - **Local Asset Harvesting:** A Node.js manager downloads all legacy media directly to `/public/migrated-media/`. The JSON files use these local paths, completely decoupling the sandbox from the web. Visual QA is executed offline via `npm run dev`.
 
 ---
+
+
+### Phase 5: Site-Wide Orchestration & State Management (Completed)
+We moved away from in-memory processing. The `state_db.ts` uses a local SQLite database to track every URL across states (`DISCOVERED`, `CRAWLED`, `HASHED`, etc.) ensuring fault tolerance. A dry-run spider seeds this database rapidly before heavy Playwright extraction begins.
+
+### Phase 6: Structural Clustering & At-Scale Extraction (Pending)
+To process 10,000+ pages without burning GPU cycles, we cluster identical structural hashes. One "Representative URL" is sent to the LLM to architect the component schema. The rest are ripped via Cheerio strictly matching the defined DOM selectors.
+
+### Phase 7: CMS Seeding & Production Sync (Pending)
+The locally vetted `migrated-media` and standardized JSON Blueprints are bulk-synced to Cloudflare R2 and D1, or pushed into a Headless CMS.
 
 ## Financial & Operational Model
 

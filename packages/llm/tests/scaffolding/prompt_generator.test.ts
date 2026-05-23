@@ -1,14 +1,11 @@
+import { getConfig, setConfig } from "@fotocopy/engine/src/config";
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { generatePrompts } from "../../src/scaffolding/prompt_generator";
 
-vi.mock("../../../../fotocopy.config", () => ({
-  fotocopyConfig: {
-    llm: {
-      autoGenerateComponents: false,
-    },
-  },
+vi.mock("@fotocopy/engine", () => ({
+  getConfig: () => ({ llm: { autoGenerateComponents: false } }),
 }));
 
 describe("Phase 4: Prompt Generator (Copilot Scaffolding)", () => {

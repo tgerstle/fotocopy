@@ -4,7 +4,7 @@ import * as path from "path";
 import {
   extractTokens,
   snapToTailwindGrid,
-} from "../../src/crawler/token_extractor";
+} from "../src/crawler/token_extractor";
 
 describe("Stage 1: Token Extractor Validator", () => {
   it("loads mock computed styles", () => {

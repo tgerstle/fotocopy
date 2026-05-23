@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractCodeBlocks } from "../../src/scaffolding/llm_parser";
+import { extractCodeBlocks } from "../src/scaffolding/llm_parser";
 
 describe("Stage 6: LLM Output Code Parsing Validations", () => {
   it("extracts component and story blocks out of conversational LLM markdown", () => {

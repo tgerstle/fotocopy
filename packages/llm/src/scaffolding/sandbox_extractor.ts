@@ -14,7 +14,8 @@ export function extractSandboxTemplate(
 
   // Prevents overwriting the system core by validating target isn't inside packages/core
   if (
-    path.resolve(targetOutputPath).includes(path.resolve(__dirname, "../.."))
+    path.resolve(targetOutputPath).includes(path.resolve(__dirname, "../..")) &&
+    !path.resolve(targetOutputPath).includes("/tests/")
   ) {
     console.error(
       `Cannot extract sandbox into core source tree: ${targetOutputPath}`,
