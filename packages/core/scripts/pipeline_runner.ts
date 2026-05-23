@@ -469,7 +469,9 @@ async function main() {
     });
   } else {
     console.log('\n--- 🎉 NO ERRORS TRIGGERED ---');
-    console.log(`\nTo view your generated components in Storybook, run:\n   npm run preview ${new URL(targetUrl).hostname.replace(/^www\./, '')}\n`);
+    if (options.targetUrl) {
+      console.log(`\nTo view your generated components in Storybook, run:\n   pnpm run preview ${new URL(options.targetUrl).hostname.replace(/^www\./, '')}\n`);
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { fotocopyConfig } from "../../fotocopy.config";
+import { fotocopyConfig } from "../../../fotocopy.config";
 import { fetchSitemapUrls } from "./crawler/sitemap";
 import { crawlAndCapture } from "./crawler/capture";
 import { processChunks } from "./llm/batch_classifier";

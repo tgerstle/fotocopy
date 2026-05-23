@@ -13,4 +13,4 @@ if [ ! -d "$OUTPUT_DIR" ]; then
   fi
 fi
 echo "Starting preview for $TARGET..."
-cd "$OUTPUT_DIR" && npm install && npm run storybook
+cd "$OUTPUT_DIR" && pnpm install && pnpm run storybook

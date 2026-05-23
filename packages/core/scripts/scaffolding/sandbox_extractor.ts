@@ -43,7 +43,7 @@ export function extractSandboxTemplate(
     }
 
     console.log(`\n📦 Installing Sandbox Dependencies...`);
-    execSync("npm ci --no-audit --no-fund", {
+    execSync("pnpm install --no-frozen-lockfile", {
       cwd: targetOutputPath,
       stdio: "inherit",
     });

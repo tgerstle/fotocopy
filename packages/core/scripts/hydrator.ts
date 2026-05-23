@@ -45,7 +45,8 @@ export async function hydrate(
           alt: el.text().trim() || el.attr("title") || el.attr("aria-label") || ""
         };
       } else if ((el.attr("style") || "").includes("background-image")) {
-        const bgMatch = el.attr("style").match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i);
+        const style = el.attr("style");
+        const bgMatch = style ? style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i) : null;
         resolvedData[fieldName] = {
           src: bgMatch ? bgMatch[1] : "",
           alt: el.attr("aria-label") || el.text().trim() || ""

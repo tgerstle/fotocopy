@@ -14,7 +14,7 @@ export interface GlobalManifest {
  * so that identical structures with different content hash identically.
  */
 export function getStructuralSignature(
-  el: cheerio.Element,
+  el: any,
   $: cheerio.CheerioAPI,
 ): string {
   if (el.type === "text") return ""; // Ignore text for structural hash
