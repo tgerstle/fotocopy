@@ -1,0 +1,20 @@
+{
+  "name": "@fotocopy/engine",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "type": "commonjs",
+  "dependencies": {
+    "@playwright/test": "^1.60.0",
+    "better-sqlite3": "^12.10.0",
+    "cheerio": "^1.2.0",
+    "playwright": "^1.60.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/better-sqlite3": "^7.6.13",
+    "vitest": "^3.0.0"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}

@@ -4,10 +4,9 @@
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "scripts": {
-    "test:core": "pnpm --filter @fotocopy/core run test",
-    "migrate": "pnpm --filter @fotocopy/core run migrate",
     "preview": "./scripts/preview.sh",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm -r run test"
   },
   "lint-staged": {
     "*.ts": [

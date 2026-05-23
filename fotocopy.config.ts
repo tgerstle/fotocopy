@@ -9,10 +9,10 @@ export const fotocopyConfig = {
     "https://www.css-snacks.com/guide/system-fonts-what-they-are-and-when-to-use-them/",
   ],
   sitemapUrl: "https://www.css-snacks.com/sitemap-index.xml",
-  intakeCsvPath: path.resolve(__dirname, "packages/core/data/legacy-urls.csv"),
+  intakeCsvPath: path.resolve(__dirname, "data/legacy-urls.csv"),
 
   // Output Directories
-  outputDir: path.resolve(__dirname, "packages/core/output/live_capture"),
+  outputDir: path.resolve(__dirname, "output/live_capture"),
 
   // LLM Configuration
   llm: {

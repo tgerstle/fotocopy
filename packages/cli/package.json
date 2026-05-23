@@ -1,0 +1,17 @@
+{
+  "name": "@fotocopy/cli",
+  "version": "1.0.0",
+  "main": "src/pipeline_runner.ts",
+  "type": "commonjs",
+  "dependencies": {
+    "@fotocopy/engine": "workspace:*",
+    "@fotocopy/llm": "workspace:*",
+    "commander": "^14.0.3"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
