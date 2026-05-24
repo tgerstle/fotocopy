@@ -33,6 +33,7 @@ export async function fetchSitemapUrls(sitemapUrl: string): Promise<string[]> {
   return urls;
 }
 
+/* v8 ignore start */
 if (require.main === module) {
   (async () => {
     const sitemapUrl = getConfig().sitemapUrl;

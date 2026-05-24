@@ -86,4 +86,42 @@ describe("LLM Classification Client (Ollama)", () => {
       /Classification failed after/,
     );
   });
+
+  it("heals hallucinated string strings via regex trimming", async () => {
+    const ComponentSchema = z.object({
+      target: z.string(),
+      mappings: z.record(z.string(), z.string()),
+    });
+
+    const mockResponseJSON = JSON.stringify({
+      target: "RichText",
+      mappings: {
+        title: "123_content_content",
+        subtitle: ",456,",
+      },
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ response: mockResponseJSON }),
+    });
+
+    const result = await classifyChunk("<div></div>", ComponentSchema);
+    expect(result.mappings.title).toBe("123");
+    expect(result.mappings.subtitle).toBe("456");
+  });
+
+  it("throws generic Ollama API Error if response is not ok", async () => {
+    const ComponentSchema = z.object({ target: z.string() });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+    });
+
+    await expect(classifyChunk("text", ComponentSchema)).rejects.toThrow(
+      "Ollama API Error: 404 Not Found",
+    );
+  });
 });

@@ -5,3 +5,4 @@ output/
 packages/core/output/
 packages/sandbox/data/mock-api/index.json
 
+coverage/

@@ -73,6 +73,11 @@ ${tokensString}
 - Design using standard **shadcn/ui** layout patterns. Use common primitive component names (e.g., \`Button\`, \`Card\`, \`Sheet\`, \`NavigationMenu\`) to structure your output cleanly.
 - Use the \`lucide-react\` library for icons. However, do NOT import brand icons (e.g. Github, Twitter, Linkedin) from lucide-react, as they have been removed. Use purely semantic SVG or text fallbacks for social icons.
 
+# State & Data Coupling (CRITICAL)
+- DO NOT inject complex application state hooks (\`useState\`, \`useEffect\`) if the component appears to be highly stateful like a "Search Results Grid", "Live Cart", or "Dynamic Filter". 
+- Instead, treat the block as a "Dumb Component" relying entirely on explicitly defined \`props\`.
+- Example: If a Search block requires search results, accept a \`results: Array<any>\` and \`queryTerm: string\` prop rather than fetching data internally.
+
 # Instructions
 
 1. Output exactly two Markdown code blocks.

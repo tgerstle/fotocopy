@@ -110,6 +110,11 @@ ${tokensString}
 - Consider empty states or optional props (e.g. \`{subtitle && <p>{subtitle}</p>}\`).
 - You MUST rely on the \`lucide-react\` library for icons (e.g., \`import { ArrowRight } from "lucide-react";\`). However, do NOT import brand icons (e.g. Github, Twitter, Linkedin) from lucide-react, as they have been removed. Use purely semantic HTML text fallbacks for social icons. Do NOT output standard \`<svg>\` blob code.
 
+# State & Data Coupling (CRITICAL)
+- DO NOT inject complex application state hooks (\`useState\`, \`useEffect\`) if the component appears to be highly stateful like a "Search Results Grid", "Live Cart", or "Dynamic Filter".
+- Instead, treat the block as a "Dumb Component" relying entirely on explicitly defined \`props\` (derived from the schema).
+- Example: If a component requires search results or dynamic data, define them entirely through the Props Interface. The component should be visually complete but entirely decoupled from live application data fetching.
+
 # Instructions
 
 1. Output exactly two Markdown code blocks formatted like:
