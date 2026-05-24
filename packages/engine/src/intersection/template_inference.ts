@@ -92,7 +92,7 @@ export function inferTemplates(
     // We only cluster sub-directories into Collections.
     if (prefix === "/") continue;
 
-    for (const [hash, urls] of Object.entries(hashGroups)) {
+    for (const urls of Object.values(hashGroups)) {
       if (urls.length >= minClusterSize) {
         // e.g., We have a reliable CMS Collection!
         const templateName = `${prefix.replace("/", "").toUpperCase()}_COLLECTION`;

@@ -1,6 +1,7 @@
 {
   "name": "fotocopy-workspace",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "scripts": {
@@ -8,7 +9,8 @@
     "prepare": "husky",
     "test": "pnpm -r run test",
     "lint": "eslint .",
-    "typecheck": "pnpm -r exec tsc --noEmit"
+    "typecheck": "pnpm -r exec tsc --noEmit",
+    "ci:local": "pnpm run lint && pnpm run typecheck && pnpm run test"
   },
   "lint-staged": {
     "*.ts": [

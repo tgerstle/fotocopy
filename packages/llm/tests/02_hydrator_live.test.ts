@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, afterAll } from "vitest";
 import { hydrate } from "../src/scaffolding/hydrator";
 import * as path from "path";
 import * as fs from "fs/promises";

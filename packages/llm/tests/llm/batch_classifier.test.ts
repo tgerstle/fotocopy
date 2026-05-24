@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { processChunks } from "../../src/llm/batch_classifier";
 import * as fs from "fs/promises";
-import * as path from "path";
 import * as ollama_client from "../../src/llm/ollama_client";
 
 vi.mock("fs/promises", () => ({

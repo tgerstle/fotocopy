@@ -64,7 +64,7 @@ export async function runDiscovery(fotocopyConfig: any) {
         const pathname = new URL(url).pathname;
         const info = insertStmt.run(url, pathname);
         if (info.changes > 0) insertedCount++;
-      } catch (e) {
+      } catch {
         // Skip invalid URL strings natively
       }
     }

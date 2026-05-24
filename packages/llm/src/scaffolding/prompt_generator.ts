@@ -1,7 +1,6 @@
 import { getConfig } from "@fotocopy/engine";
 import { SemanticTokens } from "@fotocopy/engine";
 import { parseAndHeal } from "./ast_guard";
-import { extractCodeBlocks } from "./llm_parser";
 import { PipelineError } from "@fotocopy/engine";
 
 export interface OrchestrationTask {

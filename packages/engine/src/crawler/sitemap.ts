@@ -1,5 +1,3 @@
-import * as fs from "fs/promises";
-import * as path from "path";
 import * as cheerio from "cheerio";
 
 import { getConfig } from "../config";

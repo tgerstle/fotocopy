@@ -1,6 +1,4 @@
 import { test, expect, vi, beforeEach, afterEach } from "vitest";
-import { runDiscovery } from "@fotocopy/engine";
-import { processChunks } from "@fotocopy/llm";
 import {
   initializeDatabase,
   db,

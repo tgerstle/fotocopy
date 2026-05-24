@@ -1,0 +1,92 @@
+
+> fotocopy-workspace@1.0.0 lint /Users/tgerstle/code/fotocopy
+> eslint .
+
+
+/Users/tgerstle/code/fotocopy/packages/cli/src/pipeline_runner.ts
+  427:11  warning  'manifest' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/cli/tests/mock_pipeline.test.ts
+  2:10  warning  'runDiscovery' is defined but never used   @typescript-eslint/no-unused-vars
+  3:10  warning  'processChunks' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/assets/manager.ts
+  31:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+  75:24  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/crawler/capture.ts
+    1:25  warning  'Browser' is defined but never used  @typescript-eslint/no-unused-vars
+   28:14  warning  'e' is defined but never used        @typescript-eslint/no-unused-vars
+  148:18  warning  'e' is defined but never used        @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/crawler/queue.ts
+   2:13  warning  'path' is defined but never used             @typescript-eslint/no-unused-vars
+  19:9   warning  'header' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/crawler/sitemap.ts
+  1:13  warning  'fs' is defined but never used    @typescript-eslint/no-unused-vars
+  2:13  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/discovery/spider.ts
+  67:16  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/intersection/template_inference.ts
+  95:17  warning  'hash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/src/state_db.test.ts
+  8:3  warning  'updateStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/tests/intersection/06_escape_hatches.test.ts
+  4:13  warning  'fs' is defined but never used        @typescript-eslint/no-unused-vars
+  5:13  warning  'path' is defined but never used      @typescript-eslint/no-unused-vars
+  6:13  warning  'os' is defined but never used        @typescript-eslint/no-unused-vars
+  7:10  warning  'execSync' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/tests/live/01_crawler.test.ts
+  5:13  warning  'fs' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/engine/tests/live/02_synthetic_dom.test.ts
+  2:10  warning  'chromium' is defined but never used  @typescript-eslint/no-unused-vars
+  2:20  warning  'Page' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/src/llm/ollama_client.ts
+  111:7   warning  'lastError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  192:20  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/src/scaffolding/manifest_generator.ts
+  75:43  warning  'expected' is defined but never used  @typescript-eslint/no-unused-vars
+  75:61  warning  'slug' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/src/scaffolding/prompt_generator.ts
+  4:10  warning  'extractCodeBlocks' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/src/scaffolding/token_injector.ts
+  2:13  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/02_hydrator.test.ts
+  9:9  warning  'mockTokensPath' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/02_hydrator_live.test.ts
+  1:32  warning  'beforeAll' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/03_dag_orchestrator_live.test.ts
+  1:36  warning  'beforeAll' is defined but never used  @typescript-eslint/no-unused-vars
+  1:47  warning  'afterAll' is defined but never used   @typescript-eslint/no-unused-vars
+  3:13  warning  'fsSync' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/05_template_delivery_live.test.ts
+  1:32  warning  'beforeAll' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/llm/batch_classifier.test.ts
+  4:13  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/scaffolding/global_generator.test.ts
+  1:10  warning  'getConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  1:21  warning  'setConfig' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tgerstle/code/fotocopy/packages/llm/tests/scaffolding/prompt_generator.test.ts
+  1:10  warning  'getConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  1:21  warning  'setConfig' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 39 problems (0 errors, 39 warnings)
+

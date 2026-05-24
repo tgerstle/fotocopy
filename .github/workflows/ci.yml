@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "mainline" ]
+    branches: ["main", "mainline"]
   pull_request:
-    branches: [ "main", "mainline" ]
+    branches: ["main", "mainline"]
 
 jobs:
   build-and-test:
@@ -26,6 +26,9 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
 
       - name: Lint
         run: pnpm run lint

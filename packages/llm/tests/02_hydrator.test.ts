@@ -6,10 +6,6 @@ import * as fs from "fs/promises";
 describe("Stage 2: Lexical Hydrator Validator", () => {
   const mockDomPath = path.resolve(__dirname, "./mocks/mock_raw_dom.html");
   const mockLlmPath = path.resolve(__dirname, "./mocks/mock_llm_output.json");
-  const mockTokensPath = path.resolve(
-    __dirname,
-    "./mocks/mock_computed_styles.json",
-  );
 
   it("extracts exact strings matching pointer IDs (Zero-Hallucination)", async () => {
     // Generate a temporary standard DesignTokens format in order for Schema to not throw.

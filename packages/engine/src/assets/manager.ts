@@ -29,7 +29,7 @@ export async function downloadAssetsLocally(
   try {
     files = await fs.readdir(manifestsDir);
   } catch (e) {
-    console.warn(`Could not read manifests dir ${manifestsDir}`);
+    console.warn(`Could not read manifests dir ${manifestsDir}`, e);
     return;
   }
 
@@ -73,7 +73,7 @@ export async function downloadAssetsLocally(
                   updated = true;
                 }
               } catch (e) {
-                console.error(`Failed to download ${fetchUrl}`);
+                console.error(`Failed to download ${fetchUrl}`, e);
               }
             }
           }

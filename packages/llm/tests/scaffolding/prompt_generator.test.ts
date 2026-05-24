@@ -1,4 +1,3 @@
-import { getConfig, setConfig } from "@fotocopy/engine/src/config";
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import * as fs from "fs/promises";
 import * as path from "path";

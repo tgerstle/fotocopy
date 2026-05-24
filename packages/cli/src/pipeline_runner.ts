@@ -424,10 +424,7 @@ async function main() {
   }
 
   if (fs.existsSync(hydrationDir) && primaryTokensPath) {
-    const manifest = await consolidateComponents(
-      hydrationDir,
-      fotocopyComponentsPath,
-    );
+    await consolidateComponents(hydrationDir, fotocopyComponentsPath);
     await generatePrompts(
       fotocopyComponentsPath,
       primaryTokensPath,

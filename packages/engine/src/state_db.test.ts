@@ -5,7 +5,6 @@ import {
   initializeDatabase,
   claimBatch,
   resetHangingJobs,
-  updateStatus,
   handleFailure,
 } from "./state_db";
 

@@ -1,4 +1,4 @@
-import { chromium, type Browser, type Page } from "playwright";
+import { chromium, type Page } from "playwright";
 import { TeardownManager } from "../teardown";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -25,7 +25,7 @@ async function handleScenarios(page: Page) {
         await el.click();
         await page.waitForTimeout(500); // Wait for transition out
       }
-    } catch (e) {
+    } catch {
       // Ignored: selector not found immediately
     }
   }
@@ -145,7 +145,7 @@ export async function crawlAndCapture({ url, outputDir }: CrawlOptions) {
               }
             }
           }
-        } catch (e) {
+        } catch {
           // Ignore cross-origin stylesheet CORS exemptions
         }
       }

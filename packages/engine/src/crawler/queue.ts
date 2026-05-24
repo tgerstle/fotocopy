@@ -1,5 +1,4 @@
 import * as fs from "fs/promises";
-import * as path from "path";
 import { crawlAndCapture } from "./capture";
 import { getConfig } from "../config";
 
@@ -16,7 +15,7 @@ export async function runIntakeQueue() {
 
   // Very basic CSV parser
   const lines = csvContent.split("\n").filter((l) => l.trim() !== "");
-  const header = lines.shift();
+  lines.shift(); // remove header
 
   const urls = lines.map((line) => line.trim());
   console.log(`Found ${urls.length} URLs in queue.`);

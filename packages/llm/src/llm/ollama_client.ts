@@ -21,7 +21,6 @@ export async function classifyChunk<T>(
 
   let attempt = 0;
   const maxAttempts = 3;
-  let lastError: string | null = null;
   let promptSuffix = "";
 
   while (attempt < maxAttempts) {
@@ -108,7 +107,6 @@ ${chunkHtml}
       return schema.parse(parsedPayload);
     } catch (error: any) {
       console.log(`[JSON Guard] Attempt ${attempt} failed: ${error.message}.`);
-      lastError = error.message;
       promptSuffix = `\n\nWARNING: Your last attempt failed with error: "${error.message}". You MUST provide perfectly valid JSON. Rule Reminder: "mappings" values MUST BE ONLY numeric IDs (e.g., "123", "45, 46"). No text repetition!`;
 
       if (attempt === maxAttempts) {
@@ -189,7 +187,7 @@ export async function generateCode(
             if (parsed.response) {
               fullResponse += parsed.response;
             }
-          } catch (e) {
+          } catch {
             // Ignore partial JSON lines
           }
         }

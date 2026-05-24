@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { crawlAndCapture } from "../../src/crawler/capture";
 import { DesignTokensSchema } from "../../../../packages/llm/src/schemas/tokens";
 import * as path from "path";
-import * as fs from "fs/promises";
 import * as cheerio from "cheerio";
 import { getConfig, setConfig } from "../../src/config";
 
@@ -19,7 +18,7 @@ describe("Phase 1: Live Crawler Engine (Contract-Driven Testing)", () => {
 
   it(
     "executes a defensive crawl against css-snacks.com",
-    { timeout: 30000 }, // Generous timeout for Chromium to launch & load
+    { timeout: 60000 }, // Generous timeout for Chromium to launch & load
     async () => {
       const result = await crawlAndCapture({ url: targetUrl, outputDir });
       capturedHtml = result.html;

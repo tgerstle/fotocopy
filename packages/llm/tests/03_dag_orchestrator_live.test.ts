@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import * as fs from "fs/promises";
-import * as fsSync from "fs";
 import * as path from "path";
 import { generateMapReduceStrategy } from "../src/scaffolding/prompt_generator";
 import { extractTokens } from "@fotocopy/engine/src/crawler/token_extractor";
