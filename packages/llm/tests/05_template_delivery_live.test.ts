@@ -5,7 +5,7 @@ import * as path from "path";
 import { extractSandboxTemplate } from "../src/scaffolding/sandbox_extractor";
 
 describe("Stage 5: Template Sandbox Validator (Live Repository State)", () => {
-  const liveSrc = path.resolve(__dirname, "../../templates/react-sandbox");
+  const liveSrc = path.resolve(__dirname, "../../cli/templates/react-sandbox");
   const targetOut = path.resolve(__dirname, "../../output/sandbox-live-test");
 
   afterAll(async () => {

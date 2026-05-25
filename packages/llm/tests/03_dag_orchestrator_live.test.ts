@@ -7,7 +7,7 @@ import { extractTokens } from "@fotocopy/engine/src/crawler/token_extractor";
 describe("Stage 3: DAG Orchestrator Validator (Live Blueprint)", () => {
   const liveTokensPath = path.resolve(
     __dirname,
-    "../../../mock_capture/01_design_tokens.json",
+    "./mocks/mock_capture/01_design_tokens.json",
   );
   const liveComponentDbPath = path.resolve(
     __dirname,

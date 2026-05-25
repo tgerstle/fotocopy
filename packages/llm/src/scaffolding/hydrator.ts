@@ -1,4 +1,5 @@
 import * as fs from "fs/promises";
+import * as path from "path";
 import * as cheerio from "cheerio";
 import { LLMPageSchema } from "../schemas/llm";
 import { DesignTokensSchema } from "../schemas/tokens";
@@ -85,9 +86,18 @@ if (require.main === module) {
   (async () => {
     try {
       const data = await hydrate(
-        "./mock_capture/01_raw_dom.html",
-        "./mock_llm/02_llm_output.json",
-        "./mock_capture/01_design_tokens.json",
+        path.resolve(
+          __dirname,
+          "../../tests/mocks/mock_capture/01_raw_dom.html",
+        ),
+        path.resolve(
+          __dirname,
+          "../../tests/mocks/mock_llm/02_llm_output.json",
+        ),
+        path.resolve(
+          __dirname,
+          "../../tests/mocks/mock_capture/01_design_tokens.json",
+        ),
       );
       await fs.writeFile(
         "./output/03_cms_ready.json",

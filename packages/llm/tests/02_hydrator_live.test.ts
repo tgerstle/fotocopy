@@ -7,15 +7,15 @@ import * as fsSync from "fs";
 describe("Stage 2: Lexical Hydrator Validator (Live Extracted Data)", () => {
   const domPath = path.resolve(
     __dirname,
-    "../../../mock_capture/01_raw_dom.html",
+    "./mocks/mock_capture/01_raw_dom.html",
   );
   const llmPath = path.resolve(
     __dirname,
-    "../../../mock_llm/02_llm_output.json",
+    "./mocks/mock_llm/02_llm_output.json",
   );
   const tokensPath = path.resolve(
     __dirname,
-    "../../../mock_capture/01_design_tokens.json",
+    "./mocks/mock_capture/01_design_tokens.json",
   );
   const outputPath = path.resolve(
     __dirname,

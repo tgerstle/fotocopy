@@ -26,7 +26,7 @@ export default tseslint.config(
       "output/**",
       "**/node_modules/**",
       "packages/core/output/**",
-      "templates/**",
+      "packages/cli/templates/**",
       "demo-frontend/**",
       "dist/**",
       "**/dist/**"
