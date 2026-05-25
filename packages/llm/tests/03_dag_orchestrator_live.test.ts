@@ -11,7 +11,7 @@ describe("Stage 3: DAG Orchestrator Validator (Live Blueprint)", () => {
   );
   const liveComponentDbPath = path.resolve(
     __dirname,
-    "../../../output/mock_fotocopy.components.json",
+    "./mocks/mock_output/mock_fotocopy.components.json",
   );
 
   it("orchestrates a real blueprint chunk from the DB", async () => {
