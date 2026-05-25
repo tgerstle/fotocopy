@@ -213,6 +213,11 @@ program
     "--run-spider",
     "Seed the local DB from the configured sitemap before processing",
   )
+  .option(
+    "--llm-timeout <ms>",
+    "Override the local LLM fetch timeout in milliseconds",
+    parseInt,
+  )
   .parse(process.argv);
 
 const options = program.opts();
@@ -255,7 +260,7 @@ async function main() {
   }
 
   // Find and load Fotocopy config if present
-  let fotocopyConfig = {};
+  let fotocopyConfig: any = {};
   const configCallingDir = process.env.INIT_CWD || process.cwd();
   const configPath = options.config
     ? path.resolve(configCallingDir, options.config)
@@ -264,6 +269,13 @@ async function main() {
   if (fs.existsSync(configPath)) {
     const imported = await import(configPath);
     fotocopyConfig = imported.fotocopyConfig || imported.default || {};
+
+    if (options.llmTimeout) {
+      fotocopyConfig.llm = fotocopyConfig.llm || {};
+      fotocopyConfig.llm.timeout = options.llmTimeout;
+      console.log(`Overriding LLM timeout to ${options.llmTimeout}ms`);
+    }
+
     setConfig(fotocopyConfig);
     console.log(`Loaded configuration from ${configPath}`);
   } else if (options.config) {

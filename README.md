@@ -34,9 +34,7 @@ Clone the repository and install dependencies:
 ```bash
 git clone <your-repo>
 cd fotocopy
-npm install
-cd packages/core
-npm install
+pnpm install
 ```
 
 ---
@@ -45,19 +43,34 @@ npm install
 
 Fotocopy relies on a central SQLite-backed pipeline runner (`pipeline_runner.ts`) to execute the state machine pipeline chronologically in batches. It features automated error aggregation—meaning independent job failures are isolated, skipped, and reported in a summary table at the end so the pipeline doesn't crash entirely.
 
+### Configuration
+
+Fotocopy is configured primarily through a `fotocopy.config.ts` file located in the root of your workspace. This file defines global settings like:
+
+- **URL Discovery**: Target URLs, Sitemap URLs, and static URL lists.
+- **LLM Configuration**: The local model to use (e.g., `gemma4:26b`), endpoint, temperature, and timeout limits.
+- **Plugins**: Specific DOM matching rules and escape hatches.
+
+**Note:** Command Line Interface (CLI) flags always take precedence over the file-based configuration. If you provide a flag in the CLI, it will dynamically override the corresponding setting from your `fotocopy.config.ts` for that run.
+
 ### Running the Pipeline
 
-You can run the migration from the root of the project using the mapped NPM scripts.
+You can run the migration from the root of the project using the mapped pnpm scripts.
 
-To run the pipeline against a specific URL, you can optionally specify a custom output directory before the target URL. Because we are passing arguments through `npm run`, you must use `--` before the custom flags:
+To run the pipeline against a specific URL, you can optionally specify a custom output directory before the target URL. Note that with `pnpm run`, you do **not** need to use `--` before the custom flags:
 
 ```bash
-npm run migrate -- ./my-custom-output --target-url https://css-snacks.com/ --force
+pnpm run migrate ./my-custom-output --target-url https://www.example.com/ --force --llm-timeout 900000
 ```
 
+### CLI Arguments & Flags
+
 - `[output-dir]`: (Optional) The first positional argument defines where the data is saved. Defaults to `./output` relative to the current working directory.
-- `--target-url`: The website you want to ingest and migrate.
-- `--force`: Resets the SQL database queue state for this URL back to `DISCOVERED` and forces the pipeline to overwrite and regenerate all extracted chunk models, sandbox files, and compiled React components.
+- `-c, --config <path>`: Path to a custom fotocopy config file (defaults to `fotocopy.config.ts` in the current working directory).
+- `--target-url <url>`: **"Sniper Mode"**. Runs the exact pipeline against a single URL for component extraction, ignoring the static URL lists or spiders specified in the config.
+- `-f, --force`: Resets the SQL database queue state for this URL back to `DISCOVERED` and forces the pipeline to overwrite and regenerate all extracted chunk models, sandbox files, and compiled React components.
+- `--run-spider`: Seeds the local DB from the configured sitemap before processing.
+- `--llm-timeout <ms>`: Overrides the local LLM fetch timeout in milliseconds (useful for heavier models that need more time to process without editing the config file).
 
 ### Pipeline Execution Phases
 
@@ -96,7 +109,7 @@ To view the generated components:
 cd output/css-snacks.com
 
 # Start the local isolated Storybook environment
-npm run storybook
+pnpm run storybook
 ```
 
 This starts a local development server at `http://localhost:6006/` where you can interact visually with the exact components the LLM scaffolded, safely sandboxed from the rest of the application.
@@ -106,7 +119,7 @@ This starts a local development server at `http://localhost:6006/` where you can
 ## 🛠 Troubleshooting
 
 - **Headers Timeout Error:** If the LLM integration encounters timeout issues (`UND_ERR_HEADERS_TIMEOUT`), ensure Ollama is actively running in the background and has enough system resources allocated.
-- **Pipeline Failures/Code Formatting:** If a specific component crashes generation, the pipeline runner will catch the `PipelineError` and output a summary table at the end. To retry specific components without completely restarting the crawler, you can use the `--force` flag on the target URL. 
+- **Pipeline Failures/Code Formatting:** If a specific component crashes generation, the pipeline runner will catch the `PipelineError` and output a summary table at the end. To retry specific components without completely restarting the crawler, you can use the `--force` flag on the target URL.
 - **Stale Files/Ghost Components:** Because components output sequentially, using `--force` will force React files to overwrite themselves. If old component files are still clinging around, delete the target's output cache directory completely (`rm -rf output/<domain>`) and run `--force`.
 
 ## 📜 Legal / Licensing

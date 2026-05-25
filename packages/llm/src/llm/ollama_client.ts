@@ -6,6 +6,7 @@ export interface OllamaOptions {
   model?: string;
   endpoint?: string;
   temperature?: number;
+  timeout?: number;
 }
 
 export async function classifyChunk<T>(
@@ -70,10 +71,13 @@ ${chunkHtml}
         options: {
           temperature,
           repeat_penalty: 1.5,
-          num_predict: 512, // Reduced to prevent infinite loops
+          num_predict: 2048, // Increased to support completed structured output JSON
         },
       }),
-      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(120000)]), // Added abort controller for teardown
+      signal: AbortSignal.any([
+        controller.signal,
+        AbortSignal.timeout(options.timeout || 600000),
+      ]), // Added abort controller for teardown
     });
 
     if (!response.ok) {
@@ -157,8 +161,8 @@ export async function generateCode(
         }),
         signal: AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(600000),
-        ]), // Absolute max time 10m
+          AbortSignal.timeout(options.timeout || 1200000),
+        ]), // Absolute max time allows custom timeout or long fallback
       });
 
       if (!response.ok) {

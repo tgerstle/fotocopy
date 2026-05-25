@@ -10,12 +10,13 @@
     "test": "pnpm -r run test",
     "lint": "eslint .",
     "typecheck": "pnpm -r exec tsc --noEmit",
-    "ci:local": "pnpm run lint && pnpm run typecheck && pnpm run test"
+    "ci:local": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "migrate": "tsx packages/cli/src/pipeline_runner.ts"
   },
   "lint-staged": {
     "*.ts": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --config eslint.config.mjs --fix --no-warn-ignored"
     ]
   },
   "devDependencies": {

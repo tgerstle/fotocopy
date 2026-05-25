@@ -1,4 +1,8 @@
 import * as path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const fotocopyConfig = {
   testTargetUrl: process.env.TEST_TARGET_URL || "https://css-snacks.com",
@@ -19,6 +23,7 @@ export const fotocopyConfig = {
     model: "gemma4:26b",
     endpoint: "http://localhost:11434/api/generate",
     temperature: 0.1,
+    timeout: 1200000, // 20 minutes to accommodate heavy local models
     // Feed component prompts back to Ollama to generate physical .tsx files
     autoGenerateComponents: true,
   },
