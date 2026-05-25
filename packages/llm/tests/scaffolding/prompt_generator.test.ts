@@ -50,7 +50,7 @@ describe("Phase 4: Prompt Generator (Copilot Scaffolding)", () => {
     expect(heroContent).toContain("The target block is: `Hero`");
     expect(heroContent).toContain("title");
     expect(heroContent).toContain("subtitle");
-    expect(heroContent).toContain("#E24A4A"); // token check
+    expect(heroContent).toContain("text-primary"); // mapped token check
 
     const faqContent = await fs.readFile(faqPromptPath, "utf-8");
     expect(faqContent).toContain("The target block is: `FAQ`");

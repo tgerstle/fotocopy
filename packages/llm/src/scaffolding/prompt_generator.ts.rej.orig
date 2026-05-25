@@ -1,0 +1,16 @@
+@@ -124,11 +124,10 @@
+ 
+ # Instructions
+ 
+-1. Output exactly two Markdown code blocks formatted like:
++1. Output exactly one Markdown code block formatted like:
+    \`\`\`tsx
+    // your code here
+    \`\`\`
+-2. In the first code block, output \`${componentName}.tsx\`. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary for things like toggles.
+-3. In the second code block, output a perfectly valid Storybook stories file named \`${componentName}.stories.tsx\`. Embed the provided JSON payload (if available) into the \`args\`.
+-4. Style the component matching standard modern UI practices, using the W3C tokens provided.
+-5. STRICT TAILWIND RULE: DO NOT use arbitrary hex codes or hardcoded colors like \`bg-[#2F345F]\`. You MUST USE semantic Tailwind variables mapped to the tokens provided above (e.g. \`bg-[var(--color-bluedark)]\`). Your output must be fully themeable.
++2. In the code block, output \`${componentName}.tsx\`. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary for things like toggles.
++3. Style the component matching standard modern UI practices, using the W3C tokens provided.
++4. STRICT TAILWIND RULE: DO NOT use arbitrary hex codes or hardcoded colors like \`bg-[#2F345F]\`. You MUST USE semantic Tailwind variables mapped to the tokens provided above (e.g. \`bg-[var(--color-bluedark)]\`). Your output must be fully themeable.

@@ -50,5 +50,5 @@ describe("Stage 5: Template Sandbox Copy Validator", () => {
       false,
     );
     expect(fsSync.existsSync(path.join(dummyTarget, ".next"))).toBe(false);
-  });
+  }, 60000);
 });

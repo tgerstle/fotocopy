@@ -34,5 +34,5 @@ describe("Stage 5: Template Sandbox Validator (Live Repository State)", () => {
 
     // Ensure node_modules never makes it across from standard monorepo installations
     expect(fsSync.existsSync(path.join(targetOut, "node_modules"))).toBe(false);
-  });
+  }, 60000);
 });

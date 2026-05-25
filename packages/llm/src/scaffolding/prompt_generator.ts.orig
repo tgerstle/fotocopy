@@ -66,25 +66,13 @@ export async function generatePrompts(
   const manifest: ComponentsManifest = JSON.parse(manifestRaw);
 
   const tokensRaw = await fs.readFile(tokensPath, "utf-8");
-  const parsedTokens = JSON.parse(tokensRaw);
-
-  let tailwindTokensMapping = `You MUST map layout colors strictly to these parsed theme tokens using exact Tailwind classes (DO NOT use arbitrary hexes!):\n`;
-  tailwindTokensMapping += `- Generic Background: \`bg-background\`\n`;
-  tailwindTokensMapping += `- Generic Text: \`text-foreground\`\n`;
-
-  if (parsedTokens.color) {
-    for (const key of Object.keys(parsedTokens.color)) {
-      if (["background", "text", "foreground"].includes(key)) continue;
-      tailwindTokensMapping += `- ${key.charAt(0).toUpperCase() + key.slice(1)}: Use \`bg-${key} text-${key}-foreground\` or \`text-${key}\`\n`;
-    }
-  }
+  // Keep tokens as string for injection
+  const tokensString = JSON.stringify(JSON.parse(tokensRaw), null, 2);
 
   await fs.mkdir(outputDir, { recursive: true });
 
   // Build the Shadcn manifest dynamically so the LLM doesn't hallucinate components that aren't there
-  const dynamicShadcnManifest = await buildShadcnManifest(
-    path.resolve(__dirname, "../../../cli/templates/react-sandbox"),
-  );
+  const dynamicShadcnManifest = await buildShadcnManifest(path.resolve(__dirname, "../../../cli/templates/react-sandbox"));
 
   const generatedFiles: string[] = [];
 
@@ -99,38 +87,6 @@ export async function generatePrompts(
       ? `\n# Hydrated Mock Data (From Database)\nUse this exact data for the Storybook \`args\` so it renders realistically:\n\`\`\`json\n${JSON.stringify(componentSampleData, null, 2)}\n\`\`\`\n`
       : "";
 
-    let interfaceString = "";
-    if (getConfig().llm?.autoGenerateComponents) {
-      const interfacePrompt = `# Context
-You are defining the strict Data Model for a React component named \`${componentName}\`.
-Here is the raw schema shape extracted from the payload:
-\`\`\`json
-${schemaString}
-\`\`\`
-
-# Instructions
-Extract the required props for a React component representing this data.
-Output ONLY a Typescript Interface named \`${componentName}Props\`. Do NOT output any component implementation code.
-`;
-      console.log(
-        `Generating Data-First Prop Interface: ${componentName}Props via LLM...`,
-      );
-      try {
-        const interfaceGen = await generateCode(
-          interfacePrompt,
-          getConfig().llm,
-        );
-        interfaceString = interfaceGen.component
-          ? interfaceGen.component
-          : `export interface ${componentName}Props {\n  [key: string]: any;\n}`;
-      } catch (err) {
-        console.error("Interface generation failed fallback", err);
-        interfaceString = `export interface ${componentName}Props {\n  [key: string]: any;\n}`;
-      }
-    } else {
-      interfaceString = `/* Auto-generation disabled. Raw Schema: */\n/*\n${schemaString}\n*/\nexport interface ${componentName}Props {\n  [key: string]: any;\n}`;
-    }
-
     const promptContent = `# Context
 
 You are building a standard React 19 Component that acts as a UI block.
@@ -138,13 +94,16 @@ The target block is: \`${componentName}\`
 
 # Strict TypeScript Interface
 
-The component MUST accept exactly these props. Use this generated interface:
-\`\`\`typescript
-${interfaceString}
+The component MUST accept exactly these props derived directly from the consolidated schema shape:
+\`\`\`json
+${schemaString}
 \`\`\`${sampleDataString}
 # Design System
 
-${tailwindTokensMapping}
+Use Tailwind CSS classes exclusively. Here are the W3C Design Tokens extracted from the site:
+\`\`\`json
+${tokensString}
+\`\`\`
 
 ${dynamicShadcnManifest}
 
@@ -163,12 +122,14 @@ ${dynamicShadcnManifest}
 
 # Instructions
 
-1. Output exactly one Markdown code block formatted like:
+1. Output exactly two Markdown code blocks formatted like:
    \`\`\`tsx
    // your code here
    \`\`\`
-2. In the code block, output \`${componentName}.tsx\`. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary for things like toggles.
-3. Style the component matching standard modern UI practices, using the W3C tokens provided.
+2. In the first code block, output \`${componentName}.tsx\`. Do not use client hooks (\`useState\`, \`useEffect\`) unless explicitly necessary for things like toggles.
+3. In the second code block, output a perfectly valid Storybook stories file named \`${componentName}.stories.tsx\`. Embed the provided JSON payload (if available) into the \`args\`.
+4. Style the component matching standard modern UI practices, using the W3C tokens provided.
+5. STRICT TAILWIND RULE: DO NOT use arbitrary hex codes or hardcoded colors like \`bg-[#2F345F]\`. You MUST USE semantic Tailwind variables mapped to the tokens provided above (e.g. \`bg-[var(--color-bluedark)]\`). Your output must be fully themeable.
 `;
 
     const outPath = path.join(outputDir, `${componentName}.prompt.md`);
@@ -207,62 +168,11 @@ ${dynamicShadcnManifest}
               healedComponent.code,
             );
 
-            // Storybook pass
-            const storyPrompt = `# Context
-You are writing a Storybook file for a previously generated UI Component.
-Target Component: \`${componentName}\`
-
-Here is the generated component source:
-\`\`\`tsx
-${healedComponent.code}
-\`\`\`
-
-${sampleDataString}
-
-# Instructions
-1. Return EXACTLY ONE Markdown code block containing code for \`${componentName}.stories.tsx\`.
-2. Generate completely valid, isolated Storybook standard format. 
-3. Use \`args\` correctly based on the payload provided (if any).
-`;
-
-            console.log(
-              `Generating Story for: ${componentName}.stories.tsx via LLM...`,
-            );
-            const storyGeneration = await generateCode(
-              storyPrompt,
-              getConfig().llm,
-            );
-
-            // Try to extract from the returned "component" property since prompt only asks for one block
-            const storyOutput =
-              storyGeneration.component || storyGeneration.story;
-
-            if (storyOutput) {
-              const healedStory = await parseAndHeal(
-                storyOutput,
-                async (code, error) => {
-                  console.log(
-                    `[AST Guard] Reflection healing needed for ${componentName}.stories.tsx: ${error}`,
-                  );
-                  const reflectPrompt = `The following React code has a syntax error: ${error}\n\nCode:\n\`\`\`tsx\n${code}\n\`\`\`\nFix it and output ONLY the valid tsx block.`;
-                  const retryGen = await generateCode(
-                    reflectPrompt,
-                    getConfig().llm,
-                  );
-                  return retryGen.component || "";
-                },
+            if (generation.story) {
+              await fs.writeFile(
+                path.join(sandboxDir, `${componentName}.stories.tsx`),
+                generation.story,
               );
-
-              if (healedStory.success && healedStory.code) {
-                await fs.writeFile(
-                  path.join(sandboxDir, `${componentName}.stories.tsx`),
-                  healedStory.code,
-                );
-              } else {
-                console.error(
-                  `[AST Guard] Failed to heal ${componentName}.stories.tsx after retries.`,
-                );
-              }
             }
           } else {
             console.error(
